@@ -36,7 +36,7 @@ const connection = mysql.createConnection(dbConfig);
     const { user_email, password } = req.body;
     
     //Connect MySQL
-    connection.connect((err) => {
+    await connection.connect((err) => {
       if (err) {
         console.error('Error al conectar a la base de datos: ' + err.message);
         res.status(500).send("Error al conectar a la base de datos");
@@ -44,11 +44,11 @@ const connection = mysql.createConnection(dbConfig);
     })
 
     try {
-      connection.query(
+      await connection.query(
         'SELECT * FROM mob_user WHERE PASSWORD = md5(?) AND EMAIL = ? AND ENABLED = 1',
         [password, user_email],
         (err, results) => {
-          connection.end();
+          await connection.end();
           if (err) {
             console.error('Error en la consulta: ' + err.message);
             res.status(500).send('Error interno del servidor');
@@ -70,7 +70,7 @@ const connection = mysql.createConnection(dbConfig);
       );
       
     } catch (error) {
-      connection.end();
+      await connection.end();
       console.error('Error en el query a la base de datos: ' + err.message);
       res.status(500).send("Error en el query a la base de datos");
     }
@@ -95,7 +95,7 @@ const connection = mysql.createConnection(dbConfig);
       // Execute a query
       const result = await pool.request().query('SELECT * FROM M6_Picking');
 
-      pool.close()
+      await pool.close()
 
       // Send the result as a response
       res.json(result.recordset);
@@ -126,7 +126,7 @@ const connection = mysql.createConnection(dbConfig);
       // Execute a query
       const result = await pool.request().query(`SELECT * FROM M6_Picking where IDCtaCte = ${id}`);
 
-      pool.close()
+      await pool.close()
 
       // Send the result as a response
       res.json(result.recordset);
@@ -142,7 +142,7 @@ const connection = mysql.createConnection(dbConfig);
     const { id, idC } = req.params;
 
     //Connect MySQL
-    connection.connect((err) => {
+    await connection.connect((err) => {
       if (err) {
         console.error('Error al conectar a la base de datos: ' + err.message);
         res.status(500).send("Error al conectar a la base de datos");
@@ -156,7 +156,7 @@ const connection = mysql.createConnection(dbConfig);
         and mucdb.FARMER_ID  = ${idC}`;
 
     connection.query(qry, async (err, result) => {
-      connection.end();
+      await connection.end();
       if (err) {
         console.error('Error en la consulta: ' + err.message);
         res.status(500).send('Error interno del servidor');
@@ -192,7 +192,7 @@ const connection = mysql.createConnection(dbConfig);
 
             // Ejecutar la consulta SQL Server
             const recordset = await request.execute('M0_CuentasCorrientesListaPorComisionista');
-            pool.close()
+            await pool.close()
             
             res.json(recordset.recordset);
           } catch (error) {
@@ -207,7 +207,7 @@ const connection = mysql.createConnection(dbConfig);
   app.get('/listado_acopios', (req, res) => {
 
     //Connect MySQL
-    connection.connect((err) => {
+    await connection.connect((err) => {
       if (err) {
         console.error('Error al conectar a la base de datos: ' + err.message);
         res.status(500).send("Error al conectar a la base de datos");
@@ -223,7 +223,7 @@ const connection = mysql.createConnection(dbConfig);
             ORDER BY storage.name ASC
         `;
 
-    connection.query(query, (err, results) => {
+    await connection.query(query, (err, results) => {
       connection.end();
       if (err) {
         console.error('Error en la consulta: ' + err.message);

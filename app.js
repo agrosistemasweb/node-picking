@@ -47,7 +47,7 @@ const connection = mysql.createConnection(dbConfig);
       await connection.query(
         'SELECT * FROM mob_user WHERE PASSWORD = md5(?) AND EMAIL = ? AND ENABLED = 1',
         [password, user_email],
-        (err, results) => {
+        async (err, results) => {
           await connection.end();
           if (err) {
             console.error('Error en la consulta: ' + err.message);
@@ -223,8 +223,8 @@ const connection = mysql.createConnection(dbConfig);
             ORDER BY storage.name ASC
         `;
 
-    await connection.query(query, (err, results) => {
-      connection.end();
+    await connection.query(query, async (err, results) => {
+      await connection.end();
       if (err) {
         console.error('Error en la consulta: ' + err.message);
         res.status(500).send('Error interno del servidor');

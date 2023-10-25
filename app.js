@@ -32,7 +32,7 @@ const connection = mysql.createConnection(dbConfig);
   app.use(express.json());
   app.use(cors())
 
-  app.post('/users_login', (req, res) => {
+  app.post('/users_login', async (req, res) => {
     const { user_email, password } = req.body;
     
     //Connect MySQL
@@ -204,7 +204,7 @@ const connection = mysql.createConnection(dbConfig);
     });
   });
 
-  app.get('/listado_acopios', (req, res) => {
+  app.get('/listado_acopios',async (req, res) => {
 
     //Connect MySQL
     await connection.connect((err) => {

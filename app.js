@@ -48,7 +48,7 @@ const connection = mysql.createConnection(dbConfig);
         'SELECT * FROM mob_user WHERE PASSWORD = md5(?) AND EMAIL = ? AND ENABLED = 1',
         [password, user_email],
         async (err, results) => {
-          await connection.end();
+          connection.end();
           if (err) {
             console.error('Error en la consulta: ' + err.message);
             res.status(500).send('Error interno del servidor');
@@ -70,7 +70,7 @@ const connection = mysql.createConnection(dbConfig);
       );
       
     } catch (error) {
-      await connection.end();
+      connection.end();
       console.error('Error en el query a la base de datos: ' + err.message);
       res.status(500).send("Error en el query a la base de datos");
     }
@@ -156,7 +156,7 @@ const connection = mysql.createConnection(dbConfig);
         and mucdb.FARMER_ID  = ${idC}`;
 
     connection.query(qry, async (err, result) => {
-      await connection.end();
+      connection.end();
       if (err) {
         console.error('Error en la consulta: ' + err.message);
         res.status(500).send('Error interno del servidor');
@@ -224,7 +224,7 @@ const connection = mysql.createConnection(dbConfig);
         `;
 
     await connection.query(query, async (err, results) => {
-      await connection.end();
+      connection.end();
       if (err) {
         console.error('Error en la consulta: ' + err.message);
         res.status(500).send('Error interno del servidor');

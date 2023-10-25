@@ -67,7 +67,7 @@ const connection = mysql.createConnection(dbConfig);
           }
         }
       );
-      connection.end();
+      
     } catch (error) {
       console.error('Error en el query a la base de datos: ' + err.message);
       res.status(500).send("Error en el query a la base de datos");
@@ -200,7 +200,7 @@ const connection = mysql.createConnection(dbConfig);
       }
     });
 
-    connection.end();
+    
   });
 
   app.get('/listado_acopios',async (req, res) => {
@@ -237,7 +237,7 @@ const connection = mysql.createConnection(dbConfig);
       }
     });
 
-    connection.end();
+    
   });
 
 

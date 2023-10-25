@@ -36,7 +36,7 @@ const connection = mysql.createConnection(dbConfig);
     const { user_email, password } = req.body;
     
     //Connect MySQL
-    await connection.connect((err) => {
+    connection.connect((err) => {
       if (err) {
         console.error('Error al conectar a la base de datos: ' + err.message);
         res.status(500).send("Error al conectar a la base de datos");
@@ -44,11 +44,10 @@ const connection = mysql.createConnection(dbConfig);
     })
 
     try {
-      await connection.query(
+      connection.query(
         'SELECT * FROM mob_user WHERE PASSWORD = md5(?) AND EMAIL = ? AND ENABLED = 1',
         [password, user_email],
         async (err, results) => {
-          connection.end();
           if (err) {
             console.error('Error en la consulta: ' + err.message);
             res.status(500).send('Error interno del servidor');
@@ -68,9 +67,8 @@ const connection = mysql.createConnection(dbConfig);
           }
         }
       );
-      
-    } catch (error) {
       connection.end();
+    } catch (error) {
       console.error('Error en el query a la base de datos: ' + err.message);
       res.status(500).send("Error en el query a la base de datos");
     }
@@ -142,7 +140,7 @@ const connection = mysql.createConnection(dbConfig);
     const { id, idC } = req.params;
 
     //Connect MySQL
-    await connection.connect((err) => {
+    connection.connect((err) => {
       if (err) {
         console.error('Error al conectar a la base de datos: ' + err.message);
         res.status(500).send("Error al conectar a la base de datos");
@@ -156,7 +154,6 @@ const connection = mysql.createConnection(dbConfig);
         and mucdb.FARMER_ID  = ${idC}`;
 
     connection.query(qry, async (err, result) => {
-      connection.end();
       if (err) {
         console.error('Error en la consulta: ' + err.message);
         res.status(500).send('Error interno del servidor');
@@ -202,12 +199,14 @@ const connection = mysql.createConnection(dbConfig);
         }
       }
     });
+
+    connection.end();
   });
 
   app.get('/listado_acopios',async (req, res) => {
 
     //Connect MySQL
-    await connection.connect((err) => {
+    connection.connect((err) => {
       if (err) {
         console.error('Error al conectar a la base de datos: ' + err.message);
         res.status(500).send("Error al conectar a la base de datos");
@@ -223,8 +222,7 @@ const connection = mysql.createConnection(dbConfig);
             ORDER BY storage.name ASC
         `;
 
-    await connection.query(query, async (err, results) => {
-      connection.end();
+    connection.query(query, async (err, results) => {
       if (err) {
         console.error('Error en la consulta: ' + err.message);
         res.status(500).send('Error interno del servidor');
@@ -238,6 +236,8 @@ const connection = mysql.createConnection(dbConfig);
         res.json({ resultados: 0 });
       }
     });
+
+    connection.end();
   });
 
 

@@ -17,13 +17,13 @@ const dbConfig = {
 
 
 const connection = mysql.createConnection(dbConfig);
-
 //Connect MySQL
-// connection.connect((err) => {
-//   if (err) {
-//     console.error('Error al conectar a la base de datos: ' + err.message);
-//     return;
-//   }
+connection.connect((err) => {
+  if (err) {
+    console.error('Error al conectar a la base de datos: ' + err.message);
+    res.status(500).json({error: "Error al conectar a la base de datos"});
+  }
+})
 
 //   console.log('Conexión exitosa a la base de datos MySQL.');
 
@@ -35,14 +35,6 @@ const connection = mysql.createConnection(dbConfig);
   app.post('/users_login', async (req, res) => {
     const { user_email, password } = req.body;
     
-    //Connect MySQL
-    connection.connect((err) => {
-      if (err) {
-        console.error('Error al conectar a la base de datos: ' + err.message);
-        res.status(500).send("Error al conectar a la base de datos");
-      }
-    })
-
     try {
       connection.query(
         'SELECT * FROM mob_user WHERE PASSWORD = md5(?) AND EMAIL = ? AND ENABLED = 1',
@@ -50,7 +42,7 @@ const connection = mysql.createConnection(dbConfig);
         async (err, results) => {
           if (err) {
             console.error('Error en la consulta: ' + err.message);
-            res.status(500).send('Error interno del servidor');
+            res.status(500).json({ error:'Error interno del servidor' });
             return;
           }
   
@@ -63,14 +55,14 @@ const connection = mysql.createConnection(dbConfig);
             }));
             res.json({ usuario });
           } else {
-            res.json({ usuario: 0 });
+            res.status(404).json({ usuario: 0 });
           }
         }
       );
       
     } catch (error) {
       console.error('Error en el query a la base de datos: ' + err.message);
-      res.status(500).send("Error en el query a la base de datos");
+      res.status(500).json({error: "Error en el query a la base de datos"});
     }
   });
 
@@ -99,7 +91,7 @@ const connection = mysql.createConnection(dbConfig);
       res.json(result.recordset);
     } catch (error) {
       console.error(error);
-      res.status(500).send('Internal Server Error');
+      res.status(500).json({error:'Internal Server Error'});
     }
   });
 
@@ -130,7 +122,7 @@ const connection = mysql.createConnection(dbConfig);
       res.json(result.recordset);
     } catch (error) {
       console.error(error);
-      res.status(500).send('Internal Server Error');
+      res.status(500).json({error:'Internal Server Error'});
     }
   });
 
@@ -138,14 +130,6 @@ const connection = mysql.createConnection(dbConfig);
   app.get('/getComisionista/:id/:idC', async (req, res) => {
 
     const { id, idC } = req.params;
-
-    //Connect MySQL
-    connection.connect((err) => {
-      if (err) {
-        console.error('Error al conectar a la base de datos: ' + err.message);
-        res.status(500).send("Error al conectar a la base de datos");
-      }
-    })
 
     const qry = `SELECT cdb.*, mucdb.farmer_id
         from mob_user_by_client_database_connection as mucdb
@@ -156,7 +140,7 @@ const connection = mysql.createConnection(dbConfig);
     connection.query(qry, async (err, result) => {
       if (err) {
         console.error('Error en la consulta: ' + err.message);
-        res.status(500).send('Error interno del servidor');
+        res.status(500).json({error: 'Error interno del servidor'});
         return;
       }
 
@@ -194,7 +178,7 @@ const connection = mysql.createConnection(dbConfig);
             res.json(recordset.recordset);
           } catch (error) {
             console.error(`Error al conectar o ejecutar la consulta en ${servidor_externo}: ${error.message}`);
-            res.status(500).send('Error interno del servidor');
+            res.status(500).json({error:'Error interno del servidor'});
           }
         }
       }
@@ -204,14 +188,6 @@ const connection = mysql.createConnection(dbConfig);
   });
 
   app.get('/listado_acopios',async (req, res) => {
-
-    //Connect MySQL
-    connection.connect((err) => {
-      if (err) {
-        console.error('Error al conectar a la base de datos: ' + err.message);
-        res.status(500).send("Error al conectar a la base de datos");
-      }
-    })
 
     const query = `
             SELECT storage.name, storage.subdomain_name, storage.logo_path, storage.storage_id, client_database_connection.CLIENT_DATABASE_CONNECTION_ID
@@ -225,7 +201,7 @@ const connection = mysql.createConnection(dbConfig);
     connection.query(query, async (err, results) => {
       if (err) {
         console.error('Error en la consulta: ' + err.message);
-        res.status(500).send('Error interno del servidor');
+        res.status(500).json({error: 'Error interno del servidor'});
         return;
       }
 
@@ -233,7 +209,7 @@ const connection = mysql.createConnection(dbConfig);
         const resultados = results;
         res.json({ resultados });
       } else {
-        res.json({ resultados: 0 });
+        res.status(404).json({ resultados: 0 });
       }
     });
 

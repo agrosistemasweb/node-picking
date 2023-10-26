@@ -17,10 +17,6 @@ const dbConfig = {
 
 
 const connection = mysql.createConnection(dbConfig);
-//Connect MySQL
-connection.connect()
-
-//   console.log('Conexión exitosa a la base de datos MySQL.');
 
   const app = express();
 

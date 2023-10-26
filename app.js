@@ -16,7 +16,7 @@ const dbConfig = {
 };
 
 
-const connection = mysql.createConnection(dbConfig);
+const connection = mysql.createPool(dbConfig);
 
   const app = express();
 

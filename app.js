@@ -6,7 +6,7 @@ const mssql = require('mssql');
 const port = process.env.PORT ?? 3000;
 
 
-// Config BD MySQL
+// Config BD MySQL pasar a .env vars
 const dbConfig = {
   host: '167.71.171.117',
   port: 3306,
@@ -116,7 +116,6 @@ const connection = mysql.createPool(dbConfig);
       res.status(500).json({error:'Internal Server Error'});
     }
   });
-
 
   app.get('/getComisionista/:id/:idC', async (req, res) => {
 

@@ -181,7 +181,7 @@ app.post('/articulos_pickeados', async (req, res) => {
     res.status(200).json({ message: 'Articles updated successfully' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ error: `Internal Server Erro ${error.message}` });
   }
 });
 

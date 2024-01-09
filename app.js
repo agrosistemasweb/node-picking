@@ -160,8 +160,9 @@ app.get('/articulos/cuenta/:id', async (req, res) => {
   }
 });
 
-
 app.post('/articulos_pickeados', async (req, res) => {
+  console.log('Request Body:', req.body);
+
   try {
     const articulos = req.body;
 
@@ -207,7 +208,6 @@ app.post('/articulos_pickeados', async (req, res) => {
     res.status(500).json({ error: `Internal Server Erro ${connectionError.message}` });
   }
 });
-
 
 app.get('/listado_acopios',async (req, res) => {
 

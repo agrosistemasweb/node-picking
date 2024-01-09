@@ -169,19 +169,32 @@ app.post('/articulos_pickeados', async (req, res) => {
       },
     });
 
-    // Update the articles in the database
-    for (const article of articulos) {
-      await pool
-        .request()
-        .query(`UPDATE M6_Picking SET CantidadPickeada = ${article.CantidadPickeada} WHERE ID = ${article.ID}`);
+    // Begin a transaction
+    const transaction = new mssql.Transaction(pool);
+    await transaction.begin();
+
+    try {
+      // Update the articles in the database
+      for (const article of articulos) {
+        await transaction
+          .request()
+          .query(`UPDATE M6_Picking SET CantidadPickeada = ${article.CantidadPickeada} WHERE ID = ${article.ID}`);
+      }
+
+      // Commit the transaction
+      await transaction.commit();
+      await pool.close();
+
+      res.status(200).json({ message: 'Articles updated successfully' });
+    } catch (updateError) {
+      // Rollback the transaction in case of an error
+      await transaction.rollback();
+      console.error(updateError);
+      res.status(500).json({ error: `Error updating articles: ${updateError.message}` });
     }
-
-    await pool.close();
-
-    res.status(200).json({ message: 'Articles updated successfully' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: `Internal Server Erro ${error.message}` });
+  } catch (connectionError) {
+    console.error(connectionError);
+    res.status(500).json({ error: `Internal Server Erro ${connectionError.message}` });
   }
 });
 

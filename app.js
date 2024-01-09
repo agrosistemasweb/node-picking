@@ -153,10 +153,7 @@ app.get('/articulos/cuenta/:id', async (req, res) => {
 
 app.put('/articulos_pickeados', async (req, res) => {
   try {
-    const id = req.params.id;
     const articulos = req.body;
-
-    if (!id) res.status(400).send('Invalid id argument');
 
     // Create a connection pool
     const pool = await mssql.connect({

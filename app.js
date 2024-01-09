@@ -151,7 +151,7 @@ app.get('/articulos/cuenta/:id', async (req, res) => {
 });
 
 
-app.put('/articulos_pickeados', async (req, res) => {
+app.post('/articulos_pickeados', async (req, res) => {
   try {
     const articulos = req.body;
 

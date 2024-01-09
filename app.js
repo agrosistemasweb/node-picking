@@ -125,7 +125,7 @@ app.get('/articulos/cuenta/:id', async (req, res) => {
     if (!id) res.status(400).send('Invalid id argument');
     // Create a connection pool
     const pool = await mssql.connect({
-      host: '167.71.171.117',
+      server: '167.71.171.117',
       database: 'PuestoLob_Pick',
       user: 'qq',
       password: 'qq11',
@@ -157,7 +157,7 @@ app.put('/articulos_pickeados', async (req, res) => {
 
     // Create a connection pool
     const pool = await mssql.connect({
-      host: '167.71.171.117',
+      server: '167.71.171.117',
       database: 'PuestoLob_Pick',
       user: 'qq',
       password: 'qq11',

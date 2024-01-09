@@ -164,7 +164,11 @@ app.post('/articulos_pickeados', async (req, res) => {
   console.log('Request Body:', req.body);
 
   try {
-    const articulos = req.body;
+    const articulos = req.body.articulos; // Access the "articulos" key
+
+    if (!Array.isArray(articulos)) {
+      throw new Error('Invalid request body. Expected an array.');
+    }
 
     // Create a connection pool
     const pool = await mssql.connect({

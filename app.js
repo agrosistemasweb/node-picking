@@ -2,11 +2,10 @@ const express = require('express');
 const cors = require('cors')
 const mysql = require('mysql');
 const mssql = require('mssql');
-
 const port = process.env.PORT ?? 3000;
 
 
-// Config BD MySQL pasar a .env vars
+// Config BD MySQL todo: pasar a ENV
 const dbConfig = {
   host: '167.71.171.117',
   port: 3306,
@@ -15,199 +14,210 @@ const dbConfig = {
   database: 'as.comercializacion.web',
 };
 
-
 const connection = mysql.createPool(dbConfig);
 
-  const app = express();
+const app = express();
 
-  app.use(express.json());
-  app.use(cors())
+app.use(express.json());
+app.use(cors())
 
-  app.post('/users_login', async (req, res) => {
-    const { user_email, password } = req.body;
-    
-    try {
-      connection.query(
-        'SELECT * FROM mob_user WHERE PASSWORD = md5(?) AND EMAIL = ? AND ENABLED = 1',
-        [password, user_email],
-        async (err, results) => {
-          if (err) {
-            console.error('Error en la consulta: ' + err.message);
-            res.status(500).json({ error:'Error interno del servidor' });
-            return;
-          }
+
+app.post('/articulos', async (req, res) => {
+  const { user_email, password } = req.body;
   
-          if (results.length > 0) {
-            const usuario = results.map((row) => ({
-              USER_ID: row.USER_ID,
-              EMAIL: row.EMAIL,
-              NOMBRE: row.NOMBRE,
-              APELLIDO: row.APELLIDO,
-            }));
-            res.json({ usuario });
-          } else {
-            res.status(404).json({ usuario: 0 });
-          }
+  try {
+    connection.query(
+      'SELECT * FROM mob_user WHERE PASSWORD = md5(?) AND EMAIL = ? AND ENABLED = 1',
+      [password, user_email],
+      async (err, results) => {
+        if (err) {
+          console.error('Error en la consulta: ' + err.message);
+          res.status(500).json({ error:'Error interno del servidor' });
+          return;
         }
-      );
-      
-    } catch (error) {
-      console.error('Error en el query a la base de datos: ' + err.message);
-      res.status(500).json({error: "Error en el query a la base de datos"});
-    }
-  });
 
-  app.get('/articulos', async (req, res) => {
-    try {
-      // Create a connection pool
-      const pool = await mssql.connect({
-        server: '179.43.116.142',
-        database: 'PuestoLob_Pick',
-        user: 'qq',
-        password: 'qq11',
-        port: 1433,
-        options: {
-          trustedConnection: true,
-          encrypt: false,
-          trustServerCertificate: true,
-        },
-      });
-
-      // Execute a query
-      const result = await pool.request().query('SELECT * FROM M6_Picking');
-
-      await pool.close()
-
-      // Send the result as a response
-      res.json(result.recordset);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({error:'Internal Server Error'});
-    }
-  });
-
-  app.get('/articulos/cuenta/:id', async (req, res) => {
-    try {
-      const id = req.params.id;
-      if (!id) res.status(400).send('Invalid id argument');
-      // Create a connection pool
-      const pool = await mssql.connect({
-        server: '179.43.116.142',
-        database: 'PuestoLob_Pick',
-        user: 'qq',
-        password: 'qq11',
-        port: 1433,
-        options: {
-          trustedConnection: true,
-          encrypt: false,
-          trustServerCertificate: true,
-        },
-      });
-
-      // Execute a query
-      const result = await pool.request().query(`SELECT * FROM M6_Picking where IDCtaCte = ${id}`);
-
-      await pool.close()
-
-      // Send the result as a response
-      res.json(result.recordset);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({error:'Internal Server Error'});
-    }
-  });
-
-  app.get('/getComisionista/:id/:idC', async (req, res) => {
-
-    const { id, idC } = req.params;
-
-    const qry = `SELECT cdb.*, mucdb.farmer_id
-        from mob_user_by_client_database_connection as mucdb
-        inner join client_database_connection as cdb on cdb.CLIENT_DATABASE_CONNECTION_ID = mucdb.CLIENT_DATABASE_CONNECTION_ID
-        where mucdb.USER_ID  = ${id} 
-        and mucdb.FARMER_ID  = ${idC}`;
-
-    connection.query(qry, async (err, result) => {
-      if (err) {
-        console.error('Error en la consulta: ' + err.message);
-        res.status(500).json({error: 'Error interno del servidor'});
-        return;
-      }
-
-      if (result.length === 0) {
-        res.status(404).send('No se encontraron resultados para el ID proporcionado.');
-      } else {
-        // Iterar a través de los resultados de MySQL
-        for (const cnx_remota of result) {
-          const servidor_externo = cnx_remota.URL;
-          const usuario_externo = cnx_remota.USER;
-          const password_externo = cnx_remota.PASSWORD;
-          const ddbb_externo = cnx_remota.DATABASE_NAME;
-
-          const Sqlconfig = {
-            user: usuario_externo,
-            password: password_externo,
-            server: servidor_externo,
-            database: ddbb_externo,
-            options: {
-              trustedConnection: true,
-              encrypt: false,
-              trustServerCertificate: true,
-            },
-          };
-
-          try {
-            const pool = await mssql.connect(Sqlconfig);
-            const request = pool.request();
-            request.input('IDComisionistas', mssql.Int, idC);
-
-            // Ejecutar la consulta SQL Server
-            const recordset = await request.execute('M0_CuentasCorrientesListaPorComisionista');
-            await pool.close()
-            
-            res.json(recordset.recordset);
-          } catch (error) {
-            console.error(`Error al conectar o ejecutar la consulta en ${servidor_externo}: ${error.message}`);
-            res.status(500).json({error:'Error interno del servidor'});
-          }
+        if (results.length > 0) {
+          const usuario = results.map((row) => ({
+            USER_ID: row.USER_ID,
+            EMAIL: row.EMAIL,
+            NOMBRE: row.NOMBRE,
+            APELLIDO: row.APELLIDO,
+          }));
+          res.json({ usuario });
+        } else {
+          res.status(404).json({ usuario: 0 });
         }
       }
+    );
+    
+  } catch (error) {
+    console.error('Error en el query a la base de datos: ' + err.message);
+    res.status(500).json({error: "Error en el query a la base de datos"});
+  }
+});
+
+app.post('/users_login', async (req, res) => {
+  const { user_email, password } = req.body;
+  
+  try {
+    connection.query(
+      'SELECT * FROM mob_user WHERE PASSWORD = md5(?) AND EMAIL = ? AND ENABLED = 1',
+      [password, user_email],
+      async (err, results) => {
+        if (err) {
+          console.error('Error en la consulta: ' + err.message);
+          res.status(500).json({ error:'Error interno del servidor' });
+          return;
+        }
+
+        if (results.length > 0) {
+          const usuario = results.map((row) => ({
+            USER_ID: row.USER_ID,
+            EMAIL: row.EMAIL,
+            NOMBRE: row.NOMBRE,
+            APELLIDO: row.APELLIDO,
+          }));
+          res.json({ usuario });
+        } else {
+          res.status(404).json({ usuario: 0 });
+        }
+      }
+    );
+    
+  } catch (error) {
+    console.error('Error en el query a la base de datos: ' + err.message);
+    res.status(500).json({error: "Error en el query a la base de datos"});
+  }
+});
+
+app.get('/articulos', async (req, res) => {
+  try {
+    // Create a connection pool
+    const pool = await mssql.connect({
+      server: '179.43.116.142',
+      database: 'PuestoLob_Pick',
+      user: 'qq',
+      password: 'qq11',
+      port: 1433,
+      options: {
+        trustedConnection: true,
+        encrypt: false,
+        trustServerCertificate: true,
+      },
     });
 
-    
-  });
+    // Execute a query
+    const result = await pool.request().query('SELECT * FROM M6_Picking');
 
-  app.get('/listado_acopios',async (req, res) => {
+    await pool.close()
 
-    const query = `
-            SELECT storage.name, storage.subdomain_name, storage.logo_path, storage.storage_id, client_database_connection.CLIENT_DATABASE_CONNECTION_ID
-            FROM STORAGE
-            JOIN client_database_connection
-            WHERE storage.storage_id = client_database_connection.STORAGE_ID
-            AND client_database_connection.MOBILE_ENABLED = 1
-            ORDER BY storage.name ASC
-        `;
+    // Send the result as a response
+    res.json(result.recordset);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({error:'Internal Server Error'});
+  }
+});
 
-    connection.query(query, async (err, results) => {
-      if (err) {
-        console.error('Error en la consulta: ' + err.message);
-        res.status(500).json({error: 'Error interno del servidor'});
-        return;
-      }
-
-      if (results.length > 0) {
-        const resultados = results;
-        res.json({ resultados });
-      } else {
-        res.status(404).json({ resultados: 0 });
-      }
+app.get('/articulos/cuenta/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    if (!id) res.status(400).send('Invalid id argument');
+    // Create a connection pool
+    const pool = await mssql.connect({
+      host: '167.71.171.117',
+      database: 'PuestoLob_Pick',
+      user: 'qq',
+      password: 'qq11',
+      port: 1433,
+      options: {
+        trustedConnection: true,
+        encrypt: false,
+        trustServerCertificate: true,
+      },
     });
 
-    
-  });
+    // Execute a query
+    const result = await pool.request().query(`SELECT * FROM M6_Picking where IDCtaCte = ${id}`);
+
+    await pool.close()
+
+    // Send the result as a response
+    res.json(result.recordset);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({error:'Internal Server Error'});
+  }
+});
 
 
-  app.listen(port, () => {
-    console.log(`Servidor Express en ejecución en el puerto ${port}`);
+app.put('/articulos_pickeados', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const articulos = req.body;
+
+    if (!id) res.status(400).send('Invalid id argument');
+
+    // Create a connection pool
+    const pool = await mssql.connect({
+      host: '167.71.171.117',
+      database: 'PuestoLob_Pick',
+      user: 'qq',
+      password: 'qq11',
+      port: 1433,
+      options: {
+        trustedConnection: true,
+        encrypt: false,
+        trustServerCertificate: true,
+      },
+    });
+
+    // Update the articles in the database
+    for (const article of articulos) {
+      await pool
+        .request()
+        .query(`UPDATE M6_Picking SET CantidadPickeada = ${article.CantidadPickeada} WHERE ID = ${article.ID}`);
+    }
+
+    await pool.close();
+
+    res.status(200).json({ message: 'Articles updated successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+app.get('/listado_acopios',async (req, res) => {
+
+  const query = `
+          SELECT storage.name, storage.subdomain_name, storage.logo_path, storage.storage_id, client_database_connection.CLIENT_DATABASE_CONNECTION_ID
+          FROM STORAGE
+          JOIN client_database_connection
+          WHERE storage.storage_id = client_database_connection.STORAGE_ID
+          AND client_database_connection.MOBILE_ENABLED = 1
+          ORDER BY storage.name ASC
+      `;
+
+  connection.query(query, async (err, results) => {
+    if (err) {
+      console.error('Error en la consulta: ' + err.message);
+      res.status(500).json({error: 'Error interno del servidor'});
+      return;
+    }
+
+    if (results.length > 0) {
+      const resultados = results;
+      res.json({ resultados });
+    } else {
+      res.status(404).json({ resultados: 0 });
+    }
   });
-// });
+
+  
+});
+
+app.listen(port, () => {
+  console.log(`Servidor Express en ejecución en el puerto ${port}`);
+});

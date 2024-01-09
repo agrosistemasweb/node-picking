@@ -168,7 +168,7 @@ app.post('/articulos_pickeados', async (req, res) => {
 
     // Create a connection pool
     const pool = await mssql.connect({
-      server: '167.71.171.117',
+      server: '179.43.116.142',
       database: 'PuestoLob_Pick',
       user: 'qq',
       password: 'qq11',

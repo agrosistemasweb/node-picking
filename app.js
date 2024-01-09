@@ -4,6 +4,7 @@ const mysql = require('mysql');
 const mssql = require('mssql');
 const port = process.env.PORT ?? 3000;
 
+
 // Config BD MySQL todo: pasar a ENV
 const dbConfig = {
   host: '167.71.171.117',

@@ -18,6 +18,16 @@ const connection = mysql.createPool(dbConfig);
 
 const app = express();
 
+// Logging middleware
+const logMiddleware = (req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  console.log('Headers:', req.headers);
+  console.log('Body:', req.body);
+  next();
+};
+
+// Add the logging middleware to all routes
+app.use(logMiddleware);
 app.use(express.json());
 app.use(cors())
 

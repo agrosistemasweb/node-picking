@@ -117,7 +117,7 @@ app.get('/articulos', async (req, res) => {
     });
 
     // Execute a query
-    const result = await pool.request().query('SELECT * FROM M6_Picking');
+    const result = await pool.request().query("SELECT * FROM M6_Picking WHERE ESTADO = 'N'");
 
     await pool.close()
 

@@ -129,6 +129,43 @@ app.get('/articulos', async (req, res) => {
   }
 });
 
+app.get('/lotes_articulo/:gtin/:gln/:lote', async (req, res) => {
+  const { gtin, gln, lote } = req.params;
+  try {
+    const pool = await mssql.connect({
+      server: '179.43.116.142',
+      database: 'PuestoLob_Pick',
+      user: 'qq',
+      password: 'qq11',
+      port: 1433,
+      options: {
+        trustedConnection: true,
+        encrypt: false,
+        trustServerCertificate: true,
+      },
+    });
+
+    const result = await pool.request()
+    .input('GTIN', mssql.Char, gtin)
+    .input('GLN', mssql.Char, gln)
+    .input('Lote', mssql.Char, lote)
+    .query(`SELECT Lote=@Lote, CantidadDisponible=SUM(LC.Cantidad * LC.Mayor), Vencimiento=(SELECT FechaVencimiento FROM M6_Lotes WHERE ID=LC.IDLote)
+    FROM M6_LotesCuerpo LC
+    WHERE LC.Activa = 1 
+    AND LC.IDLote=(SELECT M.ID 
+        FROM M6_Lotes M 
+        WHERE M.Activa = 1 AND M.GTIN = @GTIN AND M.GLNDestino = @GLN 
+        AND @Lote=M.CodigoDeLote AND M.Estado ='Confirmada') 
+    GROUP  BY  LC.IDLote;`);
+
+    await pool.close();
+    res.json(result.recordset);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 app.get('/articulos/cuenta/:id', async (req, res) => {
   try {
     const id = req.params.id;

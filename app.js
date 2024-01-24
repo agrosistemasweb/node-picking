@@ -210,9 +210,11 @@ app.post('/articulos_pickeados', async (req, res) => {
     try {
       // Update the articles in the database
       for (const article of articulos) {
+        const query = `UPDATE M6_Picking SET CantidadPickeada = ${article.CantidadPickeada}, Estado = '${article.Estado}', Lotes = '${article.Lotes}' WHERE ID = ${article.ID}`;
+        console.log(query);
         await transaction
           .request()
-          .query(`UPDATE M6_Picking SET CantidadPickeada = ${article.CantidadPickeada}, Estado = '${article.Estado}', Lotes = '${article.Lotes}' WHERE ID = ${article.ID}`);
+          .query(query);
       }
 
       // Commit the transaction

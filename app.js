@@ -230,7 +230,7 @@ app.post('/articulos_pickeados', async (req, res) => {
       for (const article of articulos) {
         await transaction
           .request()
-          .query(`UPDATE M6_Picking SET CantidadPickeada = ${article.CantidadPickeada}, Estado = '${article.Estado}' WHERE ID = ${article.ID}`);
+          .query(`UPDATE M6_Picking SET CantidadPickeada = ${article.CantidadPickeada}, Estado = '${article.Estado}', Lotes = ${article.Lotes} WHERE ID = ${article.ID}`);
       }
 
       // Commit the transaction

@@ -6,6 +6,7 @@ const port = process.env.PORT ?? 3000;
 
 
 // Config BD MySQL todo: pasar a ENV
+// db intermedia para autenticacion
 const dbConfig = {
   host: '167.71.171.117',
   port: 3306,
@@ -13,6 +14,21 @@ const dbConfig = {
   password: 'advanta',
   database: 'as.comercializacion.web',
 };
+/* 
+.ENV
+  DB_HOST=167.71.171.117
+  DB_PORT=3306
+  DB_USER=nestor
+  DB_PASSWORD=advanta
+  DB_DATABASE=as.comercializacion.web
+const dbConfig = {
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_DATABASE,
+};
+ */
 
 const connection = mysql.createPool(dbConfig);
 
@@ -33,40 +49,6 @@ app.use(cors())
 
 
 app.post('/articulos', async (req, res) => {
-  const { user_email, password } = req.body;
-  
-  try {
-    connection.query(
-      'SELECT * FROM mob_user WHERE PASSWORD = md5(?) AND EMAIL = ? AND ENABLED = 1',
-      [password, user_email],
-      async (err, results) => {
-        if (err) {
-          console.error('Error en la consulta: ' + err.message);
-          res.status(500).json({ error:'Error interno del servidor' });
-          return;
-        }
-
-        if (results.length > 0) {
-          const usuario = results.map((row) => ({
-            USER_ID: row.USER_ID,
-            EMAIL: row.EMAIL,
-            NOMBRE: row.NOMBRE,
-            APELLIDO: row.APELLIDO,
-          }));
-          res.json({ usuario });
-        } else {
-          res.status(404).json({ usuario: 0 });
-        }
-      }
-    );
-    
-  } catch (error) {
-    console.error('Error en el query a la base de datos: ' + err.message);
-    res.status(500).json({error: "Error en el query a la base de datos"});
-  }
-});
-
-app.post('/users_login', async (req, res) => {
   const { user_email, password } = req.body;
   
   try {
@@ -230,7 +212,7 @@ app.post('/articulos_pickeados', async (req, res) => {
       for (const article of articulos) {
         await transaction
           .request()
-          .query(`UPDATE M6_Picking SET CantidadPickeada = ${article.CantidadPickeada}, Estado = '${article.Estado}', Lotes = ${article.Lotes} WHERE ID = ${article.ID}`);
+          .query(`UPDATE M6_Picking SET CantidadPickeada = ${article.CantidadPickeada}, Estado = '${article.Estado}', Lotes = '${article.Lotes}' WHERE ID = ${article.ID}`);
       }
 
       // Commit the transaction

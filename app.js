@@ -5,22 +5,7 @@ const mssql = require('mssql');
 const port = process.env.PORT ?? 3000;
 
 
-// Config BD MySQL todo: pasar a ENV
 // db intermedia para autenticacion
-const dbConfig = {
-  host: '167.71.171.117',
-  port: 3306,
-  user: 'nestor',
-  password: 'advanta',
-  database: 'as.comercializacion.web',
-};
-/* 
-.ENV
-  DB_HOST=167.71.171.117
-  DB_PORT=3306
-  DB_USER=nestor
-  DB_PASSWORD=advanta
-  DB_DATABASE=as.comercializacion.web
 const dbConfig = {
   host: process.env.DB_HOST,
   port: process.env.DB_PORT,
@@ -28,7 +13,6 @@ const dbConfig = {
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
 };
- */
 
 const connection = mysql.createPool(dbConfig);
 
@@ -47,50 +31,15 @@ app.use(logMiddleware);
 app.use(express.json());
 app.use(cors())
 
-
-app.post('/articulos', async (req, res) => {
-  const { user_email, password } = req.body;
-  
-  try {
-    connection.query(
-      'SELECT * FROM mob_user WHERE PASSWORD = md5(?) AND EMAIL = ? AND ENABLED = 1',
-      [password, user_email],
-      async (err, results) => {
-        if (err) {
-          console.error('Error en la consulta: ' + err.message);
-          res.status(500).json({ error:'Error interno del servidor' });
-          return;
-        }
-
-        if (results.length > 0) {
-          const usuario = results.map((row) => ({
-            USER_ID: row.USER_ID,
-            EMAIL: row.EMAIL,
-            NOMBRE: row.NOMBRE,
-            APELLIDO: row.APELLIDO,
-          }));
-          res.json({ usuario });
-        } else {
-          res.status(404).json({ usuario: 0 });
-        }
-      }
-    );
-    
-  } catch (error) {
-    console.error('Error en el query a la base de datos: ' + err.message);
-    res.status(500).json({error: "Error en el query a la base de datos"});
-  }
-});
-
 app.get('/articulos', async (req, res) => {
   try {
     // Create a connection pool
     const pool = await mssql.connect({
-      server: '179.43.116.142',
-      database: 'PuestoLob_Pick',
-      user: 'qq',
-      password: 'qq11',
-      port: 1433,
+      server: process.env.DB_PUESTOLOB_SERVER,
+      database: process.env.DB_PUESTOLOB_DATABASE,
+      user: process.env.DB_PUESTOLOB_USER,
+      password: process.env.DB_PUESTOLOB_PASSWORD,
+      port: process.env.DB_PUESTOLOB_PORT,
       options: {
         trustedConnection: true,
         encrypt: false,
@@ -115,11 +64,11 @@ app.get('/lotes_articulo/:gtin/:gln/:lote', async (req, res) => {
   const { gtin, gln, lote } = req.params;
   try {
     const pool = await mssql.connect({
-      server: '179.43.116.142',
-      database: 'PuestoLob_Pick',
-      user: 'qq',
-      password: 'qq11',
-      port: 1433,
+      server: process.env.DB_PUESTOLOB_SERVER,
+      database: process.env.DB_PUESTOLOB_DATABASE,
+      user: process.env.DB_PUESTOLOB_USER,
+      password: process.env.DB_PUESTOLOB_PASSWORD,
+      port: process.env.DB_PUESTOLOB_PORT,
       options: {
         trustedConnection: true,
         encrypt: false,
@@ -154,11 +103,11 @@ app.get('/articulos/cuenta/:id', async (req, res) => {
     if (!id) res.status(400).send('Invalid id argument');
     // Create a connection pool
     const pool = await mssql.connect({
-      server: '167.71.171.117',
-      database: 'PuestoLob_Pick',
-      user: 'qq',
-      password: 'qq11',
-      port: 1433,
+      server: process.env.DB_PUESTOLOB_SERVER,
+      database: process.env.DB_PUESTOLOB_DATABASE,
+      user: process.env.DB_PUESTOLOB_USER,
+      password: process.env.DB_PUESTOLOB_PASSWORD,
+      port: process.env.DB_PUESTOLOB_PORT,
       options: {
         trustedConnection: true,
         encrypt: false,
@@ -180,7 +129,7 @@ app.get('/articulos/cuenta/:id', async (req, res) => {
 });
 
 app.post('/articulos_pickeados', async (req, res) => {
-  console.log('Request Body:', req.body);
+  // console.log('Request Body:', req.body);
 
   try {
     const articulos = req.body.articulos; // Access the "articulos" key
@@ -191,11 +140,11 @@ app.post('/articulos_pickeados', async (req, res) => {
 
     // Create a connection pool
     const pool = await mssql.connect({
-      server: '179.43.116.142',
-      database: 'PuestoLob_Pick',
-      user: 'qq',
-      password: 'qq11',
-      port: 1433,
+      server: process.env.DB_PUESTOLOB_SERVER,
+      database: process.env.DB_PUESTOLOB_DATABASE,
+      user: process.env.DB_PUESTOLOB_USER,
+      password: process.env.DB_PUESTOLOB_PASSWORD,
+      port: process.env.DB_PUESTOLOB_PORT,
       options: {
         trustedConnection: true,
         encrypt: false,

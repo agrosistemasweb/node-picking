@@ -39,7 +39,7 @@ app.get('/articulos', async (req, res) => {
       database: `${process.env.DB_PUESTOLOB_DATABASE}`,
       user: `${process.env.DB_PUESTOLOB_USER}`,
       password: `${process.env.DB_PUESTOLOB_PASSWORD}`,
-      port: process.env.DB_PUESTOLOB_PORT,
+      port: Number(process.env.DB_PUESTOLOB_PORT),
       options: {
         trustedConnection: true,
         encrypt: false,
@@ -68,7 +68,7 @@ app.get('/lotes_articulo/:gtin/:gln/:lote', async (req, res) => {
       database: `${process.env.DB_PUESTOLOB_DATABASE}`,
       user: `${process.env.DB_PUESTOLOB_USER}`,
       password: `${process.env.DB_PUESTOLOB_PASSWORD}`,
-      port: process.env.DB_PUESTOLOB_PORT,
+      port: Number(process.env.DB_PUESTOLOB_PORT),
       options: {
         trustedConnection: true,
         encrypt: false,
@@ -107,7 +107,7 @@ app.get('/articulos/cuenta/:id', async (req, res) => {
       database: `${process.env.DB_PUESTOLOB_DATABASE}`,
       user: `${process.env.DB_PUESTOLOB_USER}`,
       password: `${process.env.DB_PUESTOLOB_PASSWORD}`,
-      port: process.env.DB_PUESTOLOB_PORT,
+      port: Number(process.env.DB_PUESTOLOB_PORT),
       options: {
         trustedConnection: true,
         encrypt: false,
@@ -144,7 +144,7 @@ app.post('/articulos_pickeados', async (req, res) => {
       database: `${process.env.DB_PUESTOLOB_DATABASE}`,
       user: `${process.env.DB_PUESTOLOB_USER}`,
       password: `${process.env.DB_PUESTOLOB_PASSWORD}`,
-      port: process.env.DB_PUESTOLOB_PORT,
+      port: Number(process.env.DB_PUESTOLOB_PORT),
       options: {
         trustedConnection: true,
         encrypt: false,

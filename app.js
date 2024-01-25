@@ -7,11 +7,11 @@ const port = process.env.PORT ?? 3000;
 
 // db intermedia para autenticacion
 const dbConfig = {
-  host: process.env.DB_HOST,
+  host: `${process.env.DB_HOST}`,
   port: process.env.DB_PORT,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_DATABASE,
+  user: `${process.env.DB_USER}`,
+  password: `${process.env.DB_PASSWORD}`,
+  database: `${process.env.DB_DATABASE}`,
 };
 
 const connection = mysql.createPool(dbConfig);
@@ -35,10 +35,10 @@ app.get('/articulos', async (req, res) => {
   try {
     // Create a connection pool
     const pool = await mssql.connect({
-      server: process.env.DB_PUESTOLOB_SERVER,
-      database: process.env.DB_PUESTOLOB_DATABASE,
-      user: process.env.DB_PUESTOLOB_USER,
-      password: process.env.DB_PUESTOLOB_PASSWORD,
+      server: `${process.env.DB_PUESTOLOB_SERVER}`,
+      database: `${process.env.DB_PUESTOLOB_DATABASE}`,
+      user: `${process.env.DB_PUESTOLOB_USER}`,
+      password: `${process.env.DB_PUESTOLOB_PASSWORD}`,
       port: process.env.DB_PUESTOLOB_PORT,
       options: {
         trustedConnection: true,
@@ -64,10 +64,10 @@ app.get('/lotes_articulo/:gtin/:gln/:lote', async (req, res) => {
   const { gtin, gln, lote } = req.params;
   try {
     const pool = await mssql.connect({
-      server: process.env.DB_PUESTOLOB_SERVER,
-      database: process.env.DB_PUESTOLOB_DATABASE,
-      user: process.env.DB_PUESTOLOB_USER,
-      password: process.env.DB_PUESTOLOB_PASSWORD,
+      server: `${process.env.DB_PUESTOLOB_SERVER}`,
+      database: `${process.env.DB_PUESTOLOB_DATABASE}`,
+      user: `${process.env.DB_PUESTOLOB_USER}`,
+      password: `${process.env.DB_PUESTOLOB_PASSWORD}`,
       port: process.env.DB_PUESTOLOB_PORT,
       options: {
         trustedConnection: true,
@@ -103,10 +103,10 @@ app.get('/articulos/cuenta/:id', async (req, res) => {
     if (!id) res.status(400).send('Invalid id argument');
     // Create a connection pool
     const pool = await mssql.connect({
-      server: process.env.DB_PUESTOLOB_SERVER,
-      database: process.env.DB_PUESTOLOB_DATABASE,
-      user: process.env.DB_PUESTOLOB_USER,
-      password: process.env.DB_PUESTOLOB_PASSWORD,
+      server: `${process.env.DB_PUESTOLOB_SERVER}`,
+      database: `${process.env.DB_PUESTOLOB_DATABASE}`,
+      user: `${process.env.DB_PUESTOLOB_USER}`,
+      password: `${process.env.DB_PUESTOLOB_PASSWORD}`,
       port: process.env.DB_PUESTOLOB_PORT,
       options: {
         trustedConnection: true,
@@ -140,10 +140,10 @@ app.post('/articulos_pickeados', async (req, res) => {
 
     // Create a connection pool
     const pool = await mssql.connect({
-      server: process.env.DB_PUESTOLOB_SERVER,
-      database: process.env.DB_PUESTOLOB_DATABASE,
-      user: process.env.DB_PUESTOLOB_USER,
-      password: process.env.DB_PUESTOLOB_PASSWORD,
+      server: `${process.env.DB_PUESTOLOB_SERVER}`,
+      database: `${process.env.DB_PUESTOLOB_DATABASE}`,
+      user: `${process.env.DB_PUESTOLOB_USER}`,
+      password: `${process.env.DB_PUESTOLOB_PASSWORD}`,
       port: process.env.DB_PUESTOLOB_PORT,
       options: {
         trustedConnection: true,

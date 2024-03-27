@@ -80,10 +80,11 @@ app.get('/lotes_articulo/:gtin/:gln/:lote', async (req, res) => {
     .input('GTIN', mssql.Char, gtin)
     .input('GLN', mssql.Char, gln)
     .input('Lote', mssql.Char, lote)
-    .query(`SELECT Lote=@Lote, CantidadDisponible=SUM(LC.Cantidad * LC.Mayor), Vencimiento=(SELECT FechaVencimiento FROM M6_Lotes WHERE ID=LC.IDLote)
+    .query(`SELECT Lote=@Lote, CantidadDisponible=SUM(LC.Cantidad * LC.Mayor), 
+    Vencimiento=(SELECT FechaVencimiento FROM M6_Lotes WHERE ID=LC.IDLote)
     FROM M6_LotesCuerpo LC
     WHERE LC.Activa = 1 
-    AND LC.IDLote=(SELECT M.ID 
+    AND LC.IDLote=(SELECT MAX(M.ID)
         FROM M6_Lotes M 
         WHERE M.Activa = 1 AND M.GTIN = @GTIN AND M.GLNDestino = @GLN 
         AND @Lote=M.CodigoDeLote AND M.Estado ='Confirmada') 

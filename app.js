@@ -31,6 +31,254 @@ app.use(logMiddleware);
 app.use(express.json());
 app.use(cors())
 
+// fletes =======================================================================
+
+app.get('/empresasTransportistas', async (req, res) => {
+  try {
+    // Create a connection pool
+    const pool = await mssql.connect({
+      server: `${process.env.DB_PUESTOLOB_SERVER}`,
+      database: `${process.env.DB_PUESTOLOB_DATABASE}`,
+      user: `${process.env.DB_PUESTOLOB_USER}`,
+      password: `${process.env.DB_PUESTOLOB_PASSWORD}`,
+      port: Number(process.env.DB_PUESTOLOB_PORT),
+      options: {
+        trustedConnection: true,
+        encrypt: false,
+        trustServerCertificate: true,
+      },
+    });
+
+    // Execute a query
+    const result = await pool.request().query("SELECT ID, Descripcion from m4_transportistas where activa=1");
+
+    await pool.close()
+
+    // Send the result as a response
+    res.json(result.recordset);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({error:'Internal Server Error'});
+  }
+});
+
+app.get('/choferes/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    if (!id) res.status(400).send('Invalid id argument');
+    // Create a connection pool
+    const pool = await mssql.connect({
+      server: `${process.env.DB_PUESTOLOB_SERVER}`,
+      database: `${process.env.DB_PUESTOLOB_DATABASE}`,
+      user: `${process.env.DB_PUESTOLOB_USER}`,
+      password: `${process.env.DB_PUESTOLOB_PASSWORD}`,
+      port: Number(process.env.DB_PUESTOLOB_PORT),
+      options: {
+        trustedConnection: true,
+        encrypt: false,
+        trustServerCertificate: true,
+      },
+    });
+
+    // Execute a query
+    const result = await pool.request().query(`SELECT ID, Descripcion from m4_choferes where activa=1 and IDTransportistas=${id} ORDER BY Descripcion`);
+
+    await pool.close()
+
+    // Send the result as a response
+    res.json(result.recordset);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({error:'Internal Server Error'});
+  }
+});
+
+app.get('/camiones/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    if (!id) res.status(400).send('Invalid id argument');
+    // Create a connection pool
+    const pool = await mssql.connect({
+      server: `${process.env.DB_PUESTOLOB_SERVER}`,
+      database: `${process.env.DB_PUESTOLOB_DATABASE}`,
+      user: `${process.env.DB_PUESTOLOB_USER}`,
+      password: `${process.env.DB_PUESTOLOB_PASSWORD}`,
+      port: Number(process.env.DB_PUESTOLOB_PORT),
+      options: {
+        trustedConnection: true,
+        encrypt: false,
+        trustServerCertificate: true,
+      },
+    });
+
+    // Execute a query
+    const result = await pool.request().query(`SELECT ID, Descripcion from m4_camiones where activa=1 and IDTransportistas=${id} ORDER BY Descripcion`);
+
+    await pool.close()
+
+    // Send the result as a response
+    res.json(result.recordset);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({error:'Internal Server Error'});
+  }
+});
+
+app.get('/acoplados/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    if (!id) res.status(400).send('Invalid id argument');
+    // Create a connection pool
+    const pool = await mssql.connect({
+      server: `${process.env.DB_PUESTOLOB_SERVER}`,
+      database: `${process.env.DB_PUESTOLOB_DATABASE}`,
+      user: `${process.env.DB_PUESTOLOB_USER}`,
+      password: `${process.env.DB_PUESTOLOB_PASSWORD}`,
+      port: Number(process.env.DB_PUESTOLOB_PORT),
+      options: {
+        trustedConnection: true,
+        encrypt: false,
+        trustServerCertificate: true,
+      },
+    });
+
+    // Execute a query
+    const result = await pool.request().query(`SELECT ID, Descripcion from M4_Acoplados where activa=1 and IDTransportistas=${id} ORDER BY Descripcion`);
+
+    await pool.close()
+
+    // Send the result as a response
+    res.json(result.recordset);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({error:'Internal Server Error'});
+  }
+});
+
+// armado de remitos ============================================================
+
+app.get('/pedidosConRemitosPendientes/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    if (!id) res.status(400).send('Invalid id argument');
+    // Create a connection pool
+    const pool = await mssql.connect({
+      server: `${process.env.DB_PUESTOLOB_SERVER}`,
+      database: `${process.env.DB_PUESTOLOB_DATABASE}`,
+      user: `${process.env.DB_PUESTOLOB_USER}`,
+      password: `${process.env.DB_PUESTOLOB_PASSWORD}`,
+      port: Number(process.env.DB_PUESTOLOB_PORT),
+      options: {
+        trustedConnection: true,
+        encrypt: false,
+        trustServerCertificate: true,
+      },
+    });
+
+    // Execute a query
+    const result = await pool.request().query(`SELECT NombreCtaCte, idPedidos, idArticulo, Articulo, Pedido-Remito Pendiente from [dbo].[V6_SaldoPedidos] where Tipo='Venta' and pedido>remito and IDCtaCte=${id} ORDER BY idPedidos, idArticulo`);
+
+    await pool.close()
+
+    // Send the result as a response
+    res.json(result.recordset);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({error:'Internal Server Error'});
+  }
+});
+
+app.get('/lugaresDeRecepcion/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    if (!id) res.status(400).send('Invalid id argument');
+    // Create a connection pool
+    const pool = await mssql.connect({
+      server: `${process.env.DB_PUESTOLOB_SERVER}`,
+      database: `${process.env.DB_PUESTOLOB_DATABASE}`,
+      user: `${process.env.DB_PUESTOLOB_USER}`,
+      password: `${process.env.DB_PUESTOLOB_PASSWORD}`,
+      port: Number(process.env.DB_PUESTOLOB_PORT),
+      options: {
+        trustedConnection: true,
+        encrypt: false,
+        trustServerCertificate: true,
+      },
+    });
+
+    // Execute a query
+    const result = await pool.request().query(`SELECT ID, Descripcion from M0_CuentasCorrientesLugaresDeRecepcion WHERE Modulo=6 AND Activa=1 AND IDCuentasCorrientes=${id} ORDER BY Descripcion`);
+
+    await pool.close()
+
+    // Send the result as a response
+    res.json(result.recordset);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({error:'Internal Server Error'});
+  }
+});
+
+app.get('/cuentasRemitos', async (req, res) => {
+  try {
+    // Create a connection pool
+    const pool = await mssql.connect({
+      server: `${process.env.DB_PUESTOLOB_SERVER}`,
+      database: `${process.env.DB_PUESTOLOB_DATABASE}`,
+      user: `${process.env.DB_PUESTOLOB_USER}`,
+      password: `${process.env.DB_PUESTOLOB_PASSWORD}`,
+      port: Number(process.env.DB_PUESTOLOB_PORT),
+      options: {
+        trustedConnection: true,
+        encrypt: false,
+        trustServerCertificate: true,
+      },
+    });
+
+    // Execute a query
+    const result = await pool.request().query("SELECT DISTINCT IDCtaCte, NombreCtaCte from [dbo].[V6_SaldoPedidos] where Tipo='Venta' and pedido>remito ORDER BY NombreCtaCte");
+
+    await pool.close()
+
+    // Send the result as a response
+    res.json(result.recordset);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({error:'Internal Server Error'});
+  }
+});
+
+app.get('/depositos', async (req, res) => {
+  try {
+    // Create a connection pool
+    const pool = await mssql.connect({
+      server: `${process.env.DB_PUESTOLOB_SERVER}`,
+      database: `${process.env.DB_PUESTOLOB_DATABASE}`,
+      user: `${process.env.DB_PUESTOLOB_USER}`,
+      password: `${process.env.DB_PUESTOLOB_PASSWORD}`,
+      port: Number(process.env.DB_PUESTOLOB_PORT),
+      options: {
+        trustedConnection: true,
+        encrypt: false,
+        trustServerCertificate: true,
+      },
+    });
+
+    // Execute a query
+    const result = await pool.request().query("SELECT ID, Descripcion From M0_Depositos WHERE Modulo=6 and Activa=1 ORDER BY id");
+
+    await pool.close()
+
+    // Send the result as a response
+    res.json(result.recordset);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({error:'Internal Server Error'});
+  }
+});
+
+// =============================================================================
+
 app.get('/articulos', async (req, res) => {
   try {
     // Create a connection pool

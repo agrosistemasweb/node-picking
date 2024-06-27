@@ -199,9 +199,6 @@ app.post('/cabeceraRemito', async (req, res) => {
     kilometros 
   } = req.body;
 
-  if (!Array.isArray(articulos)) {
-    throw new Error('Invalid request body. Expected an array.');
-  }
   // Create a connection pool
   const pool = await mssql.connect({
     server: `${process.env.DB_PUESTOLOB_SERVER}`,

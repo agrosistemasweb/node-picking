@@ -201,61 +201,124 @@ app.post('/cabeceraRemito', async (req, res) => {
 
   // Create a connection pool
   const pool = await mssql.connect({
-    server: `${process.env.DB_PUESTOLOB_SERVER}`,
-    database: `${process.env.DB_PUESTOLOB_DATABASE}`,
-    user: `${process.env.DB_PUESTOLOB_USER}`,
-    password: `${process.env.DB_PUESTOLOB_PASSWORD}`,
-    port: Number(process.env.DB_PUESTOLOB_PORT),
+    server: `${process.env.DB_PUESTOLOB_TEST_SERVER}`,
+    database: `${process.env.DB_PUESTOLOB_TEST_DATABASE}`,
+    user: `${process.env.DB_PUESTOLOB_TEST_USER}`,
+    password: `${process.env.DB_PUESTOLOB_TEST_PASSWORD}`,
+    port: Number(process.env.DB_PUESTOLOB_TEST_PORT),
     options: {
       trustedConnection: true,
       encrypt: false,
       trustServerCertificate: true,
     },
   });
+  const transaction = new mssql.Transaction(pool);
 
   try {
     // Begin a transaction
-    const transaction = new mssql.Transaction(pool);
     await transaction.begin();
 
-    const request = new mssql.Request(transaction);
+    const query = `INSERT INTO M6_PickingCabezal 
+    (IDDepositos, IDCtaCte, NombreCtaCte, IDLugaresDeRecepcion, LugaresDeRecepcion, Comentario, IDEmpresaTransportista, EmpresaTransportista, IDChoferes, Chofer, IDCamiones, Camion, IDAcoplados, Acoplado, Kilometros) 
+    VALUES 
+    (${iddeposito}, ${idctacte}, '${nombrectacte}', ${idlugaresderecepcion}, '${lugaresderecepcion}', '${comentario}', ${idempresatransportista}, '${empresatransportista}', ${idchofer}, '${chofer}', ${idcamion}, '${camion}', ${idacoplado}, '${acoplado}', ${kilometros});
+    SELECT SCOPE_IDENTITY() AS id;
+`;
+
+    const result = await transaction
+    .request()
+    .query(query)
     
-    request.input('IDDepositos', mssql.Int, iddeposito);
-    request.input('IDCtaCte', mssql.Int, idctacte);
-    request.input('NombreCtaCte', mssql.NVarChar(100), nombrectacte);
-    request.input('IDLugaresDeRecepcion', mssql.Int, idlugaresderecepcion);
-    request.input('LugaresDeRecepcion', mssql.NVarChar(100), lugaresderecepcion);
-    request.input('Comentario', mssql.NVarChar(500), comentario);
-    request.input('IDEmpresaTransportista', mssql.Int, idempresatransportista);
-    request.input('EmpresaTransportista', mssql.NVarChar(100), empresatransportista);
-    request.input('IDChoferes', mssql.Int, idchofer);
-    request.input('Chofer', mssql.NVarChar(20), chofer);
-    request.input('IDCamiones', mssql.Int, idcamion);
-    request.input('Camion', mssql.NVarChar(20), camion);
-    request.input('IDAcoplados', mssql.Int, idacoplado);
-    request.input('Acoplado', mssql.NVarChar(20), acoplado);
-    request.input('Kilometros', mssql.Int, kilometros);
-
-
-    const query = `INSERT M6_PickingCabezal (IDDepositos, IDCtaCte, NombreCtaCte, IDLugaresDeRecepcion, LugaresDeRecepcion, Comentario, IDEmpresaTransportista, EmpresaTransportista, IDChoferes, Chofer, IDCamiones, Camion, IDAcoplados, Acoplado, Kilometros)
-    VALUES (@IDDepositos, @IDCtaCte, @NombreCtaCte, @IDLugaresDeRecepcion, @LugaresDeRecepcion, @Comentario, @IDEmpresaTransportista, @EmpresaTransportista, @IDChoferes, @Chofer, @IDCamiones, @Camion, @IDAcoplados, @Acoplado, @Kilometros); ; SELECT SCOPE_IDENTITY() AS id;`;
-    
-    await transaction
-      .request()
-      .query(query)
-
     // Commit the transaction
     await transaction.commit();
     await pool.close();
-
+    
     // Send the result as a response
-    res.json({
+    res.status(200).json({
       status: 'ok',
       id: result.recordset[0].id
     });
   } catch (error) {
+    if (transaction) {
+      await transaction.rollback();
+    }
+    console.log(error);
+    res.status(500).json({error:'Internal Server Error', message: error.originalError.message});
+  }
+});
+
+app.get('/cabeceraRemito', async (req, res) => {
+  try {
+    // Create a connection pool
+    const pool = await mssql.connect({
+      server: `${process.env.DB_PUESTOLOB_TEST_SERVER}`,
+      database: `${process.env.DB_PUESTOLOB_TEST_DATABASE}`,
+      user: `${process.env.DB_PUESTOLOB_TEST_USER}`,
+      password: `${process.env.DB_PUESTOLOB_TEST_PASSWORD}`,
+      port: Number(process.env.DB_PUESTOLOB_TEST_PORT),
+      options: {
+        trustedConnection: true,
+        encrypt: false,
+        trustServerCertificate: true,
+      },
+    });
+
+    // Execute a query
+    const result = await pool.request()
+      .query("SELECT * FROM M6_PickingCabezal");
+
+    await pool.close();
+
+    // Check if result is found
+    if (result.recordset.length > 0) {
+      res.json(result.recordset);
+    } else {
+      res.status(404).json({ message: 'not found' });
+    }
+  } catch (error) {
     console.error(error);
-    res.status(500).json({error:'Internal Server Error'});
+    res.status(500).json({ error: 'Internal Server Error', message: error.originalError ? error.originalError.message : error.message });
+  }
+});
+
+app.get('/cabeceraRemito/:id', async (req, res) => {
+  const { id } = req.params;
+  if (!id) {
+    res.status(400).send('Invalid id argument');
+    return;
+  }
+
+  try {
+    // Create a connection pool
+    const pool = await mssql.connect({
+      server: `${process.env.DB_PUESTOLOB_TEST_SERVER}`,
+      database: `${process.env.DB_PUESTOLOB_TEST_DATABASE}`,
+      user: `${process.env.DB_PUESTOLOB_TEST_USER}`,
+      password: `${process.env.DB_PUESTOLOB_TEST_PASSWORD}`,
+      port: Number(process.env.DB_PUESTOLOB_TEST_PORT),
+      options: {
+        trustedConnection: true,
+        encrypt: false,
+        trustServerCertificate: true,
+      },
+    });
+
+    // Execute a query
+    const result = await pool.request()
+      .input('ID', mssql.Int, id)
+      .query("SELECT * FROM M6_PickingCabezal WHERE ID = @ID");
+
+    await pool.close();
+
+    // Check if result is found
+    if (result.recordset.length > 0) {
+      res.json(result.recordset[0]);
+    } else {
+      res.status(404).json({ message: 'Record not found' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error', message: error.originalError ? error.originalError.message : error.message });
   }
 });
 

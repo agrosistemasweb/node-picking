@@ -157,6 +157,41 @@ app.get('/acoplados/:id', async (req, res) => {
 
 // armado de remitos ============================================================
 
+app.post('/cabeceraRemito', async (req, res) => {
+  try {
+    const { deposito, cliente, lugarDeRecepcion, comentario, empresaTransportista, chofer, camion, acoplado, km } = req.body;
+    // Create a connection pool
+    // const pool = await mssql.connect({
+    //   server: `${process.env.DB_PUESTOLOB_SERVER}`,
+    //   database: `${process.env.DB_PUESTOLOB_DATABASE}`,
+    //   user: `${process.env.DB_PUESTOLOB_USER}`,
+    //   password: `${process.env.DB_PUESTOLOB_PASSWORD}`,
+    //   port: Number(process.env.DB_PUESTOLOB_PORT),
+    //   options: {
+    //     trustedConnection: true,
+    //     encrypt: false,
+    //     trustServerCertificate: true,
+    //   },
+    // });
+
+    // Execute a query
+    // const result = await pool.request().query("SELECT ID, Descripcion from m4_transportistas where activa=1");
+
+    // await pool.close()
+
+    // Send the result as a response
+    res.json({
+      status: 'ok',
+      received: req.body,
+      message: 'mocked random id',
+      id: Math.random().toString(36).substr(2, 9)
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({error:'Internal Server Error'});
+  }
+});
+
 app.get('/pedidosConRemitosPendientes/:id', async (req, res) => {
   try {
     const id = req.params.id;

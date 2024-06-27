@@ -241,7 +241,7 @@ app.post('/cabeceraRemito', async (req, res) => {
     
     await transaction
       .request()
-      .execute(query)
+      .query(query)
 
     // Commit the transaction
     await transaction.commit();

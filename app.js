@@ -157,34 +157,103 @@ app.get('/acoplados/:id', async (req, res) => {
 
 // armado de remitos ============================================================
 
+/** 
+ * Creates a new remito.
+ * 
+ * req.body:
+ * {
+ *  iddeposito: number,
+ *  idctacte: number,
+ *  nombrectacte: string,
+ *  idlugaresderecepcion: number,
+ *  lugaresderecepcion: string,
+ *  comentario: string,
+ *  idempresatransportista: number,
+ *  empresatransportista: string,
+ *  idchofer: number,
+ *  chofer: string,
+ *  idcamion: number,
+ *  camion: string,
+ *  idacoplado: number,
+ *  acoplado: string,
+ *  kilometros: number
+ * }
+ * 
+ */
 app.post('/cabeceraRemito', async (req, res) => {
+  const { 
+    iddeposito, 
+    idctacte, 
+    nombrectacte, 
+    idlugaresderecepcion, 
+    lugaresderecepcion, 
+    comentario, 
+    idempresatransportista, 
+    empresatransportista, 
+    idchofer, 
+    chofer, 
+    idcamion, 
+    camion, 
+    idacoplado, 
+    acoplado, 
+    kilometros 
+  } = req.body;
+
+  if (!Array.isArray(articulos)) {
+    throw new Error('Invalid request body. Expected an array.');
+  }
+  // Create a connection pool
+  const pool = await mssql.connect({
+    server: `${process.env.DB_PUESTOLOB_SERVER}`,
+    database: `${process.env.DB_PUESTOLOB_DATABASE}`,
+    user: `${process.env.DB_PUESTOLOB_USER}`,
+    password: `${process.env.DB_PUESTOLOB_PASSWORD}`,
+    port: Number(process.env.DB_PUESTOLOB_PORT),
+    options: {
+      trustedConnection: true,
+      encrypt: false,
+      trustServerCertificate: true,
+    },
+  });
+
   try {
-    const { deposito, cliente, lugarDeRecepcion, comentario, empresaTransportista, chofer, camion, acoplado, km } = req.body;
-    // Create a connection pool
-    // const pool = await mssql.connect({
-    //   server: `${process.env.DB_PUESTOLOB_SERVER}`,
-    //   database: `${process.env.DB_PUESTOLOB_DATABASE}`,
-    //   user: `${process.env.DB_PUESTOLOB_USER}`,
-    //   password: `${process.env.DB_PUESTOLOB_PASSWORD}`,
-    //   port: Number(process.env.DB_PUESTOLOB_PORT),
-    //   options: {
-    //     trustedConnection: true,
-    //     encrypt: false,
-    //     trustServerCertificate: true,
-    //   },
-    // });
+    // Begin a transaction
+    const transaction = new mssql.Transaction(pool);
+    await transaction.begin();
 
-    // Execute a query
-    // const result = await pool.request().query("SELECT ID, Descripcion from m4_transportistas where activa=1");
+    const request = new mssql.Request(transaction);
+    request.input('IDDepositos', iddeposito, mssql.Int);
+    request.input('IDCtaCte', idctacte, mssql.Int);
+    request.input('NombreCtaCte', nombrectacte, mssql.NVarChar(100));
+    request.input('IDLugaresDeRecepcion', idlugaresderecepcion, mssql.Int);
+    request.input('LugaresDeRecepcion', lugaresderecepcion, mssql.NVarChar(100));
+    request.input('Comentario', comentario, mssql.NVarChar(500));
+    request.input('IDEmpresaTransportista', idempresatransportista, mssql.Int);
+    request.input('EmpresaTransportista', empresatransportista, mssql.NVarChar(100));
+    request.input('IDChoferes', idchofer, mssql.Int);
+    request.input('Chofer', chofer, mssql.NVarChar(20));
+    request.input('IDCamiones', idcamion, mssql.Int);
+    request.input('Camion', camion, mssql.NVarChar(20));
+    request.input('IDAcoplados', idacoplado, mssql.Int);
+    request.input('Acoplado', acoplado, mssql.NVarChar(20));
+    request.input('Kilometros', kilometros, mssql.Int);
 
-    // await pool.close()
+
+    const query = `INSERT M6_PickingCabezal (IDDepositos, IDCtaCte, NombreCtaCte, IDLugaresDeRecepcion, LugaresDeRecepcion, Comentario, IDEmpresaTransportista, EmpresaTransportista, IDChoferes, Chofer, IDCamiones, Camion, IDAcoplados, Acoplado, Kilometros)
+    VALUES (@IDDepositos, @IDCtaCte, @NombreCtaCte, @IDLugaresDeRecepcion, @LugaresDeRecepcion, @Comentario, @IDEmpresaTransportista, @EmpresaTransportista, @IDChoferes, @Chofer, @IDCamiones, @Camion, @IDAcoplados, @Acoplado, @Kilometros); ; SELECT SCOPE_IDENTITY() AS id;`;
+    
+    await transaction
+      .request()
+      .execute(query)
+
+    // Commit the transaction
+    await transaction.commit();
+    await pool.close();
 
     // Send the result as a response
     res.json({
       status: 'ok',
-      received: req.body,
-      message: 'mocked random id',
-      id: Math.random().toString(36).substr(2, 9)
+      id: result.recordset[0].id
     });
   } catch (error) {
     console.error(error);

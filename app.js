@@ -219,21 +219,22 @@ app.post('/cabeceraRemito', async (req, res) => {
     await transaction.begin();
 
     const request = new mssql.Request(transaction);
-    request.input('IDDepositos', iddeposito, mssql.Int);
-    request.input('IDCtaCte', idctacte, mssql.Int);
-    request.input('NombreCtaCte', nombrectacte, mssql.NVarChar(100));
-    request.input('IDLugaresDeRecepcion', idlugaresderecepcion, mssql.Int);
-    request.input('LugaresDeRecepcion', lugaresderecepcion, mssql.NVarChar(100));
-    request.input('Comentario', comentario, mssql.NVarChar(500));
-    request.input('IDEmpresaTransportista', idempresatransportista, mssql.Int);
-    request.input('EmpresaTransportista', empresatransportista, mssql.NVarChar(100));
-    request.input('IDChoferes', idchofer, mssql.Int);
-    request.input('Chofer', chofer, mssql.NVarChar(20));
-    request.input('IDCamiones', idcamion, mssql.Int);
-    request.input('Camion', camion, mssql.NVarChar(20));
-    request.input('IDAcoplados', idacoplado, mssql.Int);
-    request.input('Acoplado', acoplado, mssql.NVarChar(20));
-    request.input('Kilometros', kilometros, mssql.Int);
+    
+    request.input('IDDepositos', mssql.Int, iddeposito);
+    request.input('IDCtaCte', mssql.Int, idctacte);
+    request.input('NombreCtaCte', mssql.NVarChar(100), nombrectacte);
+    request.input('IDLugaresDeRecepcion', mssql.Int, idlugaresderecepcion);
+    request.input('LugaresDeRecepcion', mssql.NVarChar(100), lugaresderecepcion);
+    request.input('Comentario', mssql.NVarChar(500), comentario);
+    request.input('IDEmpresaTransportista', mssql.Int, idempresatransportista);
+    request.input('EmpresaTransportista', mssql.NVarChar(100), empresatransportista);
+    request.input('IDChoferes', mssql.Int, idchofer);
+    request.input('Chofer', mssql.NVarChar(20), chofer);
+    request.input('IDCamiones', mssql.Int, idcamion);
+    request.input('Camion', mssql.NVarChar(20), camion);
+    request.input('IDAcoplados', mssql.Int, idacoplado);
+    request.input('Acoplado', mssql.NVarChar(20), acoplado);
+    request.input('Kilometros', mssql.Int, kilometros);
 
 
     const query = `INSERT M6_PickingCabezal (IDDepositos, IDCtaCte, NombreCtaCte, IDLugaresDeRecepcion, LugaresDeRecepcion, Comentario, IDEmpresaTransportista, EmpresaTransportista, IDChoferes, Chofer, IDCamiones, Camion, IDAcoplados, Acoplado, Kilometros)

@@ -3,7 +3,7 @@ const cors = require('cors')
 const mysql = require('mysql');
 const mssql = require('mssql');
 const port = process.env.PORT ?? 3000;
-
+require('dotenv').config();
 
 // db intermedia para autenticacion
 const dbConfig = {
@@ -201,10 +201,10 @@ app.post('/cabeceraRemito', async (req, res) => {
 
   // Create a connection pool
   const pool = await mssql.connect({
-    server: `${process.env.DB_PUESTOLOB_TEST_SERVER}`,
-    database: `${process.env.DB_PUESTOLOB_TEST_DATABASE}`,
-    user: `${process.env.DB_PUESTOLOB_TEST_USER}`,
-    password: `${process.env.DB_PUESTOLOB_TEST_PASSWORD}`,
+    server: process.env.DB_PUESTOLOB_TEST_SERVER,
+    database: process.env.DB_PUESTOLOB_TEST_DATABASE,
+    user: process.env.DB_PUESTOLOB_TEST_USER,
+    password: process.env.DB_PUESTOLOB_TEST_PASSWORD,
     port: Number(process.env.DB_PUESTOLOB_TEST_PORT),
     options: {
       trustedConnection: true,

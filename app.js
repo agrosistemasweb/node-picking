@@ -430,7 +430,7 @@ app.get('/depositos', async (req, res) => {
     });
 
     // Execute a query
-    const result = await pool.request().query("SELECT ID, Descripcion From M0_Depositos WHERE Modulo=6 and Activa=1 ORDER BY id");
+    const result = await pool.request().query("Select ID, Descripcion, GLN From M0_Depositos WHERE Modulo=6 and Activa=1 ORDER BY id");
 
     await pool.close()
 

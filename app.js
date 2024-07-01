@@ -180,6 +180,73 @@ app.get('/acoplados/:id', async (req, res) => {
  * }
  * 
  */
+app.post('/pedidosRemito', async (req, res) => {
+  const { 
+    Estado, 
+    IDCtaCte, 
+    NombreCtaCte, 
+    IDArticulo, 
+    CodigoDeBarras, 
+    Gtin, 
+    GLN, 
+    NombreArticulo, 
+    Pedidos, 
+    Cantidad, 
+    Usuario, 
+    FechaAlta, 
+    HoraAlta, 
+    Lotes, 
+    CantidadPickeada, 
+    FechaPicking, 
+    HoraPicking, 
+    IDDepositos, 
+    IDCabezal
+  } = req.body;
+
+  // Create a connection pool
+  const pool = await mssql.connect({
+    server: process.env.DB_PUESTOLOB_TEST_SERVER,
+    database: process.env.DB_PUESTOLOB_TEST_DATABASE,
+    user: process.env.DB_PUESTOLOB_TEST_USER,
+    password: process.env.DB_PUESTOLOB_TEST_PASSWORD,
+    port: Number(process.env.DB_PUESTOLOB_TEST_PORT),
+    options: {
+      trustedConnection: true,
+      encrypt: false,
+      trustServerCertificate: true,
+    },
+  });
+  const transaction = new mssql.Transaction(pool);
+
+  try {
+    // Begin a transaction
+    await transaction.begin();
+
+    const query = `INSERT INTO m6_Picking (Estado, IDCtaCte, NombreCtaCte, IDArticulo, CodigoDeBarras, Gtin, GLN, NombreArticulo, Pedidos, Cantidad, Usuario, FechaAlta, HoraAlta, Lotes, CantidadPickeada, FechaPicking, HoraPicking, IDDepositos, IDCabezal)
+VALUES (${Estado}, ${IDCtaCte}, ${NombreCtaCte}, ${IDArticulo}, ${CodigoDeBarras}, ${Gtin}, ${GLN}, ${NombreArticulo}, ${Pedidos}, ${Cantidad}, ${Usuario}, ${FechaAlta}, ${HoraAlta}, ${Lotes}, ${CantidadPickeada}, ${FechaPicking}, ${HoraPicking}, ${IDDepositos}, ${IDCabezal});`;
+
+    const result = await transaction
+    .request()
+    .query(query)
+    
+    // Commit the transaction
+    await transaction.commit();
+    await pool.close();
+    
+    // Send the result as a response
+    res.status(200).json({
+      status: 'ok',
+      id: result.recordset[0].id
+    });
+  } catch (error) {
+    if (transaction) {
+      await transaction.rollback();
+    }
+    console.log(error);
+    res.status(500).json({error:'Internal Server Error', message: error.originalError.message});
+  }
+});
+
 app.post('/cabeceraRemito', async (req, res) => {
   const { 
     iddeposito, 

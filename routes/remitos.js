@@ -356,7 +356,7 @@ router.post("/pedidosRemito", async (req, res) => {
  *   post:
  *     summary: Crea remito con varios pedidos en simultaneo
  *     tags: [Remitos]
- * /
+ */
 router.post("/pedidosRemitoBulk", async (req, res) => {
     const pedidos = req.body; // Ahora esperamos un arreglo de pedidos en el cuerpo de la solicitud
 

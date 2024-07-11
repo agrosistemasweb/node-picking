@@ -5,13 +5,13 @@ const options = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'API Documentation',
+      title: 'API Doc',
       version: '1.0.0',
-      description: 'Picking API',
+      description: 'Development Picking API',
     },
     servers: [
       {
-        url: 'http://localhost:3000',
+        url: 'https://goldfish-app-2-mfno2.ondigitalocean.app',
         description: 'Development server',
       },
     ],

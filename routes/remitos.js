@@ -1,3 +1,4 @@
+const { getConnection } = require('../db');
 const express = require('express');
 const router = express.Router();
 
@@ -45,18 +46,7 @@ const connection = mysql.createPool(dbConfig);
 router.get("/empresasTransportistas", async (req, res) => {
     try {
         // Create a connection pool
-        const pool = await mssql.connect({
-            server: `${process.env.DB_PUESTOLOB_SERVER}`,
-            database: `${process.env.DB_PUESTOLOB_DATABASE}`,
-            user: `${process.env.DB_PUESTOLOB_USER}`,
-            password: `${process.env.DB_PUESTOLOB_PASSWORD}`,
-            port: Number(process.env.DB_PUESTOLOB_PORT),
-            options: {
-                trustedConnection: true,
-                encrypt: false,
-                trustServerCertificate: true,
-            },
-        });
+        const pool = await getConnection();
         
         // Execute a query
         const result = await pool.request().query("SELECT ID, Descripcion from m4_transportistas where activa=1");
@@ -106,18 +96,7 @@ router.get("/choferes/:id", async (req, res) => {
         const id = req.params.id;
         if (!id) res.status(400).send('Invalid id argument');
         // Create a connection pool
-        const pool = await mssql.connect({
-            server: `${process.env.DB_PUESTOLOB_SERVER}`,
-            database: `${process.env.DB_PUESTOLOB_DATABASE}`,
-            user: `${process.env.DB_PUESTOLOB_USER}`,
-            password: `${process.env.DB_PUESTOLOB_PASSWORD}`,
-            port: Number(process.env.DB_PUESTOLOB_PORT),
-            options: {
-                trustedConnection: true,
-                encrypt: false,
-                trustServerCertificate: true,
-            },
-        });
+        const pool = await getConnection();
         
         // Execute a query
         const result = await pool.request().query(`SELECT ID, Descripcion from m4_choferes where activa=1 and IDTransportistas=${id} ORDER BY Descripcion`);
@@ -167,18 +146,7 @@ router.get("/camiones/:id", async (req, res) => {
         const id = req.params.id;
         if (!id) res.status(400).send('Invalid id argument');
         // Create a connection pool
-        const pool = await mssql.connect({
-            server: `${process.env.DB_PUESTOLOB_SERVER}`,
-            database: `${process.env.DB_PUESTOLOB_DATABASE}`,
-            user: `${process.env.DB_PUESTOLOB_USER}`,
-            password: `${process.env.DB_PUESTOLOB_PASSWORD}`,
-            port: Number(process.env.DB_PUESTOLOB_PORT),
-            options: {
-                trustedConnection: true,
-                encrypt: false,
-                trustServerCertificate: true,
-            },
-        });
+        const pool = await getConnection();
         
         // Execute a query
         const result = await pool.request().query(`SELECT ID, Descripcion from m4_camiones where activa=1 and IDTransportistas=${id} ORDER BY Descripcion`);
@@ -228,18 +196,7 @@ router.get("/acoplados/:id", async (req, res) => {
         const id = req.params.id;
         if (!id) res.status(400).send('Invalid id argument');
         // Create a connection pool
-        const pool = await mssql.connect({
-            server: `${process.env.DB_PUESTOLOB_SERVER}`,
-            database: `${process.env.DB_PUESTOLOB_DATABASE}`,
-            user: `${process.env.DB_PUESTOLOB_USER}`,
-            password: `${process.env.DB_PUESTOLOB_PASSWORD}`,
-            port: Number(process.env.DB_PUESTOLOB_PORT),
-            options: {
-                trustedConnection: true,
-                encrypt: false,
-                trustServerCertificate: true,
-            },
-        });
+        const pool = await getConnection();
         
         // Execute a query
         const result = await pool.request().query(`SELECT ID, Descripcion from M4_Acoplados where activa=1 and IDTransportistas=${id} ORDER BY Descripcion`);
@@ -360,18 +317,8 @@ router.post("/pedidosRemito", async (req, res) => {
     // }
     
     // Create a connection pool
-    const pool = await mssql.connect({
-        server: process.env.DB_PUESTOLOB_TEST_SERVER,
-        database: process.env.DB_PUESTOLOB_TEST_DATABASE,
-        user: process.env.DB_PUESTOLOB_TEST_USER,
-        password: process.env.DB_PUESTOLOB_TEST_PASSWORD,
-        port: Number(process.env.DB_PUESTOLOB_TEST_PORT),
-        options: {
-            trustedConnection: true,
-            encrypt: false,
-            trustServerCertificate: true,
-        },
-    });
+    const pool = await getConnection();
+
     const transaction = new mssql.Transaction(pool);
     
     try {
@@ -403,6 +350,13 @@ router.post("/pedidosRemito", async (req, res) => {
     }
 });
 
+/** 
+ * @swagger
+ * /post/pedidosRemitoBulk:
+ *   post:
+ *     summary: Crea remito con varios pedidos en simultaneo
+ *     tags: [Remitos]
+ * /
 router.post("/pedidosRemitoBulk", async (req, res) => {
     const pedidos = req.body; // Ahora esperamos un arreglo de pedidos en el cuerpo de la solicitud
 
@@ -412,18 +366,7 @@ router.post("/pedidosRemitoBulk", async (req, res) => {
     }
 
     // Crear una conexión a la base de datos
-    const pool = await mssql.connect({
-        server: process.env.DB_PUESTOLOB_TEST_SERVER,
-        database: process.env.DB_PUESTOLOB_TEST_DATABASE,
-        user: process.env.DB_PUESTOLOB_TEST_USER,
-        password: process.env.DB_PUESTOLOB_TEST_PASSWORD,
-        port: Number(process.env.DB_PUESTOLOB_TEST_PORT),
-        options: {
-            trustedConnection: true,
-            encrypt: false,
-            trustServerCertificate: true,
-        },
-    });
+    const pool = await getConnection();
 
     const transaction = new mssql.Transaction(pool);
 
@@ -554,18 +497,8 @@ router.post("/cabeceraRemito", async (req, res) => {
     } = req.body;
     
     // Create a connection pool
-    const pool = await mssql.connect({
-        server: process.env.DB_PUESTOLOB_TEST_SERVER,
-        database: process.env.DB_PUESTOLOB_TEST_DATABASE,
-        user: process.env.DB_PUESTOLOB_TEST_USER,
-        password: process.env.DB_PUESTOLOB_TEST_PASSWORD,
-        port: Number(process.env.DB_PUESTOLOB_TEST_PORT),
-        options: {
-            trustedConnection: true,
-            encrypt: false,
-            trustServerCertificate: true,
-        },
-    });
+    const pool = await getConnection();
+
     const transaction = new mssql.Transaction(pool);
     
     try {
@@ -654,18 +587,7 @@ router.post("/cabeceraRemito", async (req, res) => {
 router.get("/cabeceraRemito", async (req, res) => {
     try {
         // Create a connection pool
-        const pool = await mssql.connect({
-            server: `${process.env.DB_PUESTOLOB_TEST_SERVER}`,
-            database: `${process.env.DB_PUESTOLOB_TEST_DATABASE}`,
-            user: `${process.env.DB_PUESTOLOB_TEST_USER}`,
-            password: `${process.env.DB_PUESTOLOB_TEST_PASSWORD}`,
-            port: Number(process.env.DB_PUESTOLOB_TEST_PORT),
-            options: {
-                trustedConnection: true,
-                encrypt: false,
-                trustServerCertificate: true,
-            },
-        });
+        const pool = await getConnection();
         
         // Execute a query
         const result = await pool.request()
@@ -749,18 +671,7 @@ router.get("/cabeceraRemito/:id", async (req, res) => {
     
     try {
         // Create a connection pool
-        const pool = await mssql.connect({
-            server: `${process.env.DB_PUESTOLOB_TEST_SERVER}`,
-            database: `${process.env.DB_PUESTOLOB_TEST_DATABASE}`,
-            user: `${process.env.DB_PUESTOLOB_TEST_USER}`,
-            password: `${process.env.DB_PUESTOLOB_TEST_PASSWORD}`,
-            port: Number(process.env.DB_PUESTOLOB_TEST_PORT),
-            options: {
-                trustedConnection: true,
-                encrypt: false,
-                trustServerCertificate: true,
-            },
-        });
+        const pool = await getConnection();
         
         // Execute a query
         const result = await pool.request()
@@ -817,18 +728,7 @@ router.get("/pedidosConRemitosPendientes/:id", async (req, res) => {
         const id = req.params.id;
         if (!id) res.status(400).send('Invalid id argument');
         // Create a connection pool
-        const pool = await mssql.connect({
-            server: `${process.env.DB_PUESTOLOB_SERVER}`,
-            database: `${process.env.DB_PUESTOLOB_DATABASE}`,
-            user: `${process.env.DB_PUESTOLOB_USER}`,
-            password: `${process.env.DB_PUESTOLOB_PASSWORD}`,
-            port: Number(process.env.DB_PUESTOLOB_PORT),
-            options: {
-                trustedConnection: true,
-                encrypt: false,
-                trustServerCertificate: true,
-            },
-        });
+        const pool = await getConnection();
         
         // Execute a query
         const result = await pool.request().query(`SELECT * from [dbo].[V6_SaldoPedidos] where Tipo='Venta' and pedido>remito and IDCtaCte=${id} ORDER BY idPedidos, idArticulo`);
@@ -848,18 +748,7 @@ router.get("/lugaresDeRecepcion/:id", async (req, res) => {
         const id = req.params.id;
         if (!id) res.status(400).send('Invalid id argument');
         // Create a connection pool
-        const pool = await mssql.connect({
-            server: `${process.env.DB_PUESTOLOB_SERVER}`,
-            database: `${process.env.DB_PUESTOLOB_DATABASE}`,
-            user: `${process.env.DB_PUESTOLOB_USER}`,
-            password: `${process.env.DB_PUESTOLOB_PASSWORD}`,
-            port: Number(process.env.DB_PUESTOLOB_PORT),
-            options: {
-                trustedConnection: true,
-                encrypt: false,
-                trustServerCertificate: true,
-            },
-        });
+        const pool = await getConnection();
         
         // Execute a query
         const result = await pool.request().query(`SELECT ID, Descripcion from M0_CuentasCorrientesLugaresDeRecepcion WHERE Modulo=6 AND Activa=1 AND IDCuentasCorrientes=${id} ORDER BY Descripcion`);
@@ -877,18 +766,7 @@ router.get("/lugaresDeRecepcion/:id", async (req, res) => {
 router.get("/cuentasRemitos", async (req, res) => {
     try {
         // Create a connection pool
-        const pool = await mssql.connect({
-            server: `${process.env.DB_PUESTOLOB_SERVER}`,
-            database: `${process.env.DB_PUESTOLOB_DATABASE}`,
-            user: `${process.env.DB_PUESTOLOB_USER}`,
-            password: `${process.env.DB_PUESTOLOB_PASSWORD}`,
-            port: Number(process.env.DB_PUESTOLOB_PORT),
-            options: {
-                trustedConnection: true,
-                encrypt: false,
-                trustServerCertificate: true,
-            },
-        });
+        const pool = await getConnection();
         
         // Execute a query
         const result = await pool.request().query("SELECT DISTINCT IDCtaCte, NombreCtaCte from [dbo].[V6_SaldoPedidos] where Tipo='Venta' and pedido>remito ORDER BY NombreCtaCte");
@@ -906,18 +784,7 @@ router.get("/cuentasRemitos", async (req, res) => {
 router.get("/depositos", async (req, res) => {
     try {
         // Create a connection pool
-        const pool = await mssql.connect({
-            server: `${process.env.DB_PUESTOLOB_SERVER}`,
-            database: `${process.env.DB_PUESTOLOB_DATABASE}`,
-            user: `${process.env.DB_PUESTOLOB_USER}`,
-            password: `${process.env.DB_PUESTOLOB_PASSWORD}`,
-            port: Number(process.env.DB_PUESTOLOB_PORT),
-            options: {
-                trustedConnection: true,
-                encrypt: false,
-                trustServerCertificate: true,
-            },
-        });
+        const pool = await getConnection();
         
         // Execute a query
         const result = await pool.request().query("Select ID, Descripcion, GLN From M0_Depositos WHERE Modulo=6 and Activa=1 ORDER BY id");
@@ -937,18 +804,7 @@ router.get("/depositos", async (req, res) => {
 router.get("/articulos", async (req, res) => {
     try {
         // Create a connection pool
-        const pool = await mssql.connect({
-            server: `${process.env.DB_PUESTOLOB_SERVER}`,
-            database: `${process.env.DB_PUESTOLOB_DATABASE}`,
-            user: `${process.env.DB_PUESTOLOB_USER}`,
-            password: `${process.env.DB_PUESTOLOB_PASSWORD}`,
-            port: Number(process.env.DB_PUESTOLOB_PORT),
-            options: {
-                trustedConnection: true,
-                encrypt: false,
-                trustServerCertificate: true,
-            },
-        });
+        const pool = await getConnection();
         
         // Execute a query
         const result = await pool.request().query("SELECT * FROM M6_Picking WHERE ESTADO = 'N'");
@@ -966,18 +822,7 @@ router.get("/articulos", async (req, res) => {
 router.get("/lotes_articulo/:gtin/:gln/:lote", async (req, res) => {
     const { gtin, gln, lote } = req.params;
     try {
-        const pool = await mssql.connect({
-            server: `${process.env.DB_PUESTOLOB_SERVER}`,
-            database: `${process.env.DB_PUESTOLOB_DATABASE}`,
-            user: `${process.env.DB_PUESTOLOB_USER}`,
-            password: `${process.env.DB_PUESTOLOB_PASSWORD}`,
-            port: Number(process.env.DB_PUESTOLOB_PORT),
-            options: {
-                trustedConnection: true,
-                encrypt: false,
-                trustServerCertificate: true,
-            },
-        });
+        const pool = await getConnection();
         
         const result = await pool.request()
         .input('GTIN', mssql.Char, gtin)
@@ -1006,18 +851,7 @@ router.get("/articulos/cuenta/:id", async (req, res) => {
         const id = req.params.id;
         if (!id) res.status(400).send('Invalid id argument');
         // Create a connection pool
-        const pool = await mssql.connect({
-            server: `${process.env.DB_PUESTOLOB_SERVER}`,
-            database: `${process.env.DB_PUESTOLOB_DATABASE}`,
-            user: `${process.env.DB_PUESTOLOB_USER}`,
-            password: `${process.env.DB_PUESTOLOB_PASSWORD}`,
-            port: Number(process.env.DB_PUESTOLOB_PORT),
-            options: {
-                trustedConnection: true,
-                encrypt: false,
-                trustServerCertificate: true,
-            },
-        });
+        const pool = await getConnection();
         
         // Execute a query
         const result = await pool.request().query(`SELECT * FROM M6_Picking where IDCtaCte = ${id}`);
@@ -1043,18 +877,7 @@ router.post("/articulos_pickeados", async (req, res) => {
         }
         
         // Create a connection pool
-        const pool = await mssql.connect({
-            server: `${process.env.DB_PUESTOLOB_SERVER}`,
-            database: `${process.env.DB_PUESTOLOB_DATABASE}`,
-            user: `${process.env.DB_PUESTOLOB_USER}`,
-            password: `${process.env.DB_PUESTOLOB_PASSWORD}`,
-            port: Number(process.env.DB_PUESTOLOB_PORT),
-            options: {
-                trustedConnection: true,
-                encrypt: false,
-                trustServerCertificate: true,
-            },
-        });
+        const pool = await getConnection();
         
         // Begin a transaction
         const transaction = new mssql.Transaction(pool);

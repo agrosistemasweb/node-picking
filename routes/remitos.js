@@ -1,3 +1,4 @@
+const { getConnection } = require('../db');
 const express = require('express');
 const router = express.Router();
 
@@ -15,6 +16,12 @@ const dbConfig = {
 
 const connection = mysql.createPool(dbConfig);
 
+function parseTimeToDate(timeString) {
+    const [hours, minutes, seconds] = timeString.split(':');
+    const date = new Date();
+    date.setHours(parseInt(hours, 10), parseInt(minutes, 10), parseInt(seconds, 10), 0);
+    return date;
+}
 // fletes =======================================================================
 
 /**
@@ -45,18 +52,7 @@ const connection = mysql.createPool(dbConfig);
 router.get("/empresasTransportistas", async (req, res) => {
     try {
         // Create a connection pool
-        const pool = await mssql.connect({
-            server: `${process.env.DB_PUESTOLOB_SERVER}`,
-            database: `${process.env.DB_PUESTOLOB_DATABASE}`,
-            user: `${process.env.DB_PUESTOLOB_USER}`,
-            password: `${process.env.DB_PUESTOLOB_PASSWORD}`,
-            port: Number(process.env.DB_PUESTOLOB_PORT),
-            options: {
-                trustedConnection: true,
-                encrypt: false,
-                trustServerCertificate: true,
-            },
-        });
+        const pool = await getConnection();
         
         // Execute a query
         const result = await pool.request().query("SELECT ID, Descripcion from m4_transportistas where activa=1");
@@ -106,18 +102,7 @@ router.get("/choferes/:id", async (req, res) => {
         const id = req.params.id;
         if (!id) res.status(400).send('Invalid id argument');
         // Create a connection pool
-        const pool = await mssql.connect({
-            server: `${process.env.DB_PUESTOLOB_SERVER}`,
-            database: `${process.env.DB_PUESTOLOB_DATABASE}`,
-            user: `${process.env.DB_PUESTOLOB_USER}`,
-            password: `${process.env.DB_PUESTOLOB_PASSWORD}`,
-            port: Number(process.env.DB_PUESTOLOB_PORT),
-            options: {
-                trustedConnection: true,
-                encrypt: false,
-                trustServerCertificate: true,
-            },
-        });
+        const pool = await getConnection();
         
         // Execute a query
         const result = await pool.request().query(`SELECT ID, Descripcion from m4_choferes where activa=1 and IDTransportistas=${id} ORDER BY Descripcion`);
@@ -167,18 +152,7 @@ router.get("/camiones/:id", async (req, res) => {
         const id = req.params.id;
         if (!id) res.status(400).send('Invalid id argument');
         // Create a connection pool
-        const pool = await mssql.connect({
-            server: `${process.env.DB_PUESTOLOB_SERVER}`,
-            database: `${process.env.DB_PUESTOLOB_DATABASE}`,
-            user: `${process.env.DB_PUESTOLOB_USER}`,
-            password: `${process.env.DB_PUESTOLOB_PASSWORD}`,
-            port: Number(process.env.DB_PUESTOLOB_PORT),
-            options: {
-                trustedConnection: true,
-                encrypt: false,
-                trustServerCertificate: true,
-            },
-        });
+        const pool = await getConnection();
         
         // Execute a query
         const result = await pool.request().query(`SELECT ID, Descripcion from m4_camiones where activa=1 and IDTransportistas=${id} ORDER BY Descripcion`);
@@ -228,18 +202,7 @@ router.get("/acoplados/:id", async (req, res) => {
         const id = req.params.id;
         if (!id) res.status(400).send('Invalid id argument');
         // Create a connection pool
-        const pool = await mssql.connect({
-            server: `${process.env.DB_PUESTOLOB_SERVER}`,
-            database: `${process.env.DB_PUESTOLOB_DATABASE}`,
-            user: `${process.env.DB_PUESTOLOB_USER}`,
-            password: `${process.env.DB_PUESTOLOB_PASSWORD}`,
-            port: Number(process.env.DB_PUESTOLOB_PORT),
-            options: {
-                trustedConnection: true,
-                encrypt: false,
-                trustServerCertificate: true,
-            },
-        });
+        const pool = await getConnection();
         
         // Execute a query
         const result = await pool.request().query(`SELECT ID, Descripcion from M4_Acoplados where activa=1 and IDTransportistas=${id} ORDER BY Descripcion`);
@@ -360,18 +323,8 @@ router.post("/pedidosRemito", async (req, res) => {
     // }
     
     // Create a connection pool
-    const pool = await mssql.connect({
-        server: process.env.DB_PUESTOLOB_TEST_SERVER,
-        database: process.env.DB_PUESTOLOB_TEST_DATABASE,
-        user: process.env.DB_PUESTOLOB_TEST_USER,
-        password: process.env.DB_PUESTOLOB_TEST_PASSWORD,
-        port: Number(process.env.DB_PUESTOLOB_TEST_PORT),
-        options: {
-            trustedConnection: true,
-            encrypt: false,
-            trustServerCertificate: true,
-        },
-    });
+    const pool = await getConnection();
+
     const transaction = new mssql.Transaction(pool);
     
     try {
@@ -403,6 +356,13 @@ router.post("/pedidosRemito", async (req, res) => {
     }
 });
 
+/** 
+ * @swagger
+ * /post/pedidosRemitoBulk:
+ *   post:
+ *     summary: Crea remito con varios pedidos en simultaneo
+ *     tags: [Remitos]
+ */
 router.post("/pedidosRemitoBulk", async (req, res) => {
     const pedidos = req.body; // Ahora esperamos un arreglo de pedidos en el cuerpo de la solicitud
 
@@ -412,67 +372,95 @@ router.post("/pedidosRemitoBulk", async (req, res) => {
     }
 
     // Crear una conexión a la base de datos
-    const pool = await mssql.connect({
-        server: process.env.DB_PUESTOLOB_TEST_SERVER,
-        database: process.env.DB_PUESTOLOB_TEST_DATABASE,
-        user: process.env.DB_PUESTOLOB_TEST_USER,
-        password: process.env.DB_PUESTOLOB_TEST_PASSWORD,
-        port: Number(process.env.DB_PUESTOLOB_TEST_PORT),
-        options: {
-            trustedConnection: true,
-            encrypt: false,
-            trustServerCertificate: true,
-        },
-    });
-
+    const pool = await getConnection();
     const transaction = new mssql.Transaction(pool);
 
     try {
         // Iniciar una transacción
         await transaction.begin();
+        const ps = new mssql.PreparedStatement(transaction)
 
-        // Preparar la consulta SQL para insertar pedidos
-        const preparedStatement = new mssql.PreparedStatement(transaction);
-        preparedStatement.input('Estado', mssql.String);
-        preparedStatement.input('IDCtaCte', mssql.Int);
-        preparedStatement.input('NombreCtaCte', mssql.String);
-        preparedStatement.input('IDArticulo', mssql.Int);
-        preparedStatement.input('CodigoDeBarras', mssql.String);
-        preparedStatement.input('Gtin', mssql.String);
-        preparedStatement.input('GLN', mssql.String);
-        preparedStatement.input('NombreArticulo', mssql.String);
-        preparedStatement.input('Pedidos', mssql.Int);
-        preparedStatement.input('Cantidad', mssql.Int);
-        preparedStatement.input('Usuario', mssql.String);
-        preparedStatement.input('FechaAlta', mssql.DateTime);
-        preparedStatement.input('HoraAlta', mssql.DateTime);
-        preparedStatement.input('Lotes', mssql.Int);
-        preparedStatement.input('CantidadPickeada', mssql.Int);
-        preparedStatement.input('FechaPicking', mssql.DateTime);
-        preparedStatement.input('HoraPicking', mssql.DateTime);
-        preparedStatement.input('IDDepositos', mssql.Int);
-        preparedStatement.input('IDCabezal', mssql.Int);
+        ps.input('Estado', mssql.VarChar(1)) 
+        ps.input('IDCtaCte', mssql.Int) 
+        ps.input('NombreCtaCte', mssql.VarChar(80)) 
+        ps.input('IDArticulo', mssql.Int) 
+        ps.input('CodigoDeBarras', mssql.VarChar(20)) 
+        ps.input('Gtin', mssql.VarChar(20)) 
+        ps.input('GLN', mssql.VarChar(20)) 
+        ps.input('NombreArticulo', mssql.VarChar(80)) 
+        ps.input('Pedidos', mssql.VarChar(255)) 
+        ps.input('Cantidad', mssql.Int) 
+        ps.input('Usuario', mssql.Int) 
+        ps.input('Numero', mssql.Int)
+        ps.input('FechaAlta', mssql.Date) 
+        ps.input('HoraAlta', mssql.Time(7)) 
+        ps.input('Lotes', mssql.VarChar(800)) 
+        ps.input('CantidadPickeada', mssql.Int) 
+        ps.input('FechaPicking', mssql.Date) 
+        ps.input('HoraPicking', mssql.Time(7)) 
+        ps.input('IDDepositos', mssql.Int) 
+        ps.input('IDCabezal', mssql.Int) 
 
-        const insertQuery = `INSERT INTO m6_Picking (Estado, IDCtaCte, NombreCtaCte, IDArticulo, CodigoDeBarras, Gtin, GLN, NombreArticulo, Pedidos, Cantidad, Usuario, FechaAlta, HoraAlta, Lotes, CantidadPickeada, FechaPicking, HoraPicking, IDDepositos, IDCabezal)
-                            VALUES (@Estado, @IDCtaCte, @NombreCtaCte, @IDArticulo, @CodigoDeBarras, @Gtin, @GLN, @NombreArticulo, @Pedidos, @Cantidad, @Usuario, @FechaAlta, @HoraAlta, @Lotes, @CantidadPickeada, @FechaPicking, @HoraPicking, @IDDepositos, @IDCabezal);`;
 
-        // Ejecutar la consulta para cada pedido en el arreglo
+        const query = `
+            INSERT INTO m6_Picking (
+                Estado, IDCtaCte, NombreCtaCte, IDArticulo, CodigoDeBarras, Gtin, GLN, NombreArticulo, 
+                Pedidos, Cantidad, Usuario, Numero, FechaAlta, HoraAlta, Lotes, CantidadPickeada, FechaPicking, 
+                HoraPicking, IDDepositos, IDCabezal
+            )
+            VALUES (
+                @Estado, @IDCtaCte, @NombreCtaCte, @IDArticulo, @CodigoDeBarras, @Gtin, @GLN, @NombreArticulo, 
+                @Pedidos, @Cantidad, @Usuario, @Numero, @FechaAlta, @HoraAlta, @Lotes, @CantidadPickeada, @FechaPicking, 
+                @HoraPicking, @IDDepositos, @IDCabezal
+            );
+        `;
+
+        await ps.prepare(query);
+
+        
         for (const pedido of pedidos) {
-            await preparedStatement.prepare(insertQuery);
-            await preparedStatement.execute(pedido); // Asegúrate de que el objeto pedido tenga todos los campos necesarios
-            await preparedStatement.unprepare();
+            await ps.execute({
+                Estado: pedido.Estado ? pedido.Estado.toString() : null,
+                IDCtaCte: pedido.IDCtaCte,
+                NombreCtaCte: pedido.NombreCtaCte ? pedido.NombreCtaCte.toString() : null,
+                IDArticulo: pedido.IDArticulo,
+                CodigoDeBarras: pedido.CodigoDeBarras ? pedido.CodigoDeBarras.toString() : null,
+                Gtin: pedido.Gtin ? pedido.Gtin.toString() : null,
+                GLN: pedido.GLN ? pedido.GLN.toString() : null,
+                NombreArticulo: pedido.NombreArticulo ? pedido.NombreArticulo.toString() : null,
+                Pedidos: pedido.Pedidos ? pedido.Pedidos.toString() : null,
+                Cantidad: pedido.Cantidad,
+                Numero: pedido.Numero,
+                Usuario: pedido.Usuario,
+                FechaAlta: pedido.FechaAlta,
+                HoraAlta: pedido.HoraAlta ? parseTimeToDate(pedido.HoraAlta) : null,
+                Lotes: pedido.Lotes ? pedido.Lotes.toString() : null,
+                CantidadPickeada: pedido.CantidadPickeada,
+                FechaPicking: pedido.FechaPicking,
+                HoraPicking: pedido.HoraPicking ? parseTimeToDate(pedido.HoraPicking) : null,
+                IDDepositos: pedido.IDDepositos,
+                IDCabezal: pedido.IDCabezal
+            })
         }
-
+        
         // Confirmar la transacción
+        await ps.unprepare();
+        
         await transaction.commit();
-        await pool.close();
-
         res.status(200).json({ message: "Pedidos insertados correctamente." });
     } catch (error) {
         // Si ocurre un error, revertir la transacción
-        await transaction.rollback();
-        console.error(error);
-        res.status(500).json({ error: "Error interno del servidor", message: error.originalError.message });
+        transaction.rollback(tErr => {
+            if (tErr) {
+                console.error('Error rolling back transaction:', tErr);
+                res.status(500).json({ error: 'Transaction rollback error', details: tErr.message });
+            } else {
+                console.log('Transaction rolled back successfully');
+                res.status(500).json({ error: 'Internal Server Error - Transaction rolled back', details: error });
+            }
+        });
+    } finally {
+        pool.close();
     }
 });
 
@@ -554,18 +542,8 @@ router.post("/cabeceraRemito", async (req, res) => {
     } = req.body;
     
     // Create a connection pool
-    const pool = await mssql.connect({
-        server: process.env.DB_PUESTOLOB_TEST_SERVER,
-        database: process.env.DB_PUESTOLOB_TEST_DATABASE,
-        user: process.env.DB_PUESTOLOB_TEST_USER,
-        password: process.env.DB_PUESTOLOB_TEST_PASSWORD,
-        port: Number(process.env.DB_PUESTOLOB_TEST_PORT),
-        options: {
-            trustedConnection: true,
-            encrypt: false,
-            trustServerCertificate: true,
-        },
-    });
+    const pool = await getConnection();
+
     const transaction = new mssql.Transaction(pool);
     
     try {
@@ -654,18 +632,7 @@ router.post("/cabeceraRemito", async (req, res) => {
 router.get("/cabeceraRemito", async (req, res) => {
     try {
         // Create a connection pool
-        const pool = await mssql.connect({
-            server: `${process.env.DB_PUESTOLOB_TEST_SERVER}`,
-            database: `${process.env.DB_PUESTOLOB_TEST_DATABASE}`,
-            user: `${process.env.DB_PUESTOLOB_TEST_USER}`,
-            password: `${process.env.DB_PUESTOLOB_TEST_PASSWORD}`,
-            port: Number(process.env.DB_PUESTOLOB_TEST_PORT),
-            options: {
-                trustedConnection: true,
-                encrypt: false,
-                trustServerCertificate: true,
-            },
-        });
+        const pool = await getConnection();
         
         // Execute a query
         const result = await pool.request()
@@ -749,18 +716,7 @@ router.get("/cabeceraRemito/:id", async (req, res) => {
     
     try {
         // Create a connection pool
-        const pool = await mssql.connect({
-            server: `${process.env.DB_PUESTOLOB_TEST_SERVER}`,
-            database: `${process.env.DB_PUESTOLOB_TEST_DATABASE}`,
-            user: `${process.env.DB_PUESTOLOB_TEST_USER}`,
-            password: `${process.env.DB_PUESTOLOB_TEST_PASSWORD}`,
-            port: Number(process.env.DB_PUESTOLOB_TEST_PORT),
-            options: {
-                trustedConnection: true,
-                encrypt: false,
-                trustServerCertificate: true,
-            },
-        });
+        const pool = await getConnection();
         
         // Execute a query
         const result = await pool.request()
@@ -817,18 +773,7 @@ router.get("/pedidosConRemitosPendientes/:id", async (req, res) => {
         const id = req.params.id;
         if (!id) res.status(400).send('Invalid id argument');
         // Create a connection pool
-        const pool = await mssql.connect({
-            server: `${process.env.DB_PUESTOLOB_SERVER}`,
-            database: `${process.env.DB_PUESTOLOB_DATABASE}`,
-            user: `${process.env.DB_PUESTOLOB_USER}`,
-            password: `${process.env.DB_PUESTOLOB_PASSWORD}`,
-            port: Number(process.env.DB_PUESTOLOB_PORT),
-            options: {
-                trustedConnection: true,
-                encrypt: false,
-                trustServerCertificate: true,
-            },
-        });
+        const pool = await getConnection();
         
         // Execute a query
         const result = await pool.request().query(`SELECT * from [dbo].[V6_SaldoPedidos] where Tipo='Venta' and pedido>remito and IDCtaCte=${id} ORDER BY idPedidos, idArticulo`);
@@ -848,18 +793,7 @@ router.get("/lugaresDeRecepcion/:id", async (req, res) => {
         const id = req.params.id;
         if (!id) res.status(400).send('Invalid id argument');
         // Create a connection pool
-        const pool = await mssql.connect({
-            server: `${process.env.DB_PUESTOLOB_SERVER}`,
-            database: `${process.env.DB_PUESTOLOB_DATABASE}`,
-            user: `${process.env.DB_PUESTOLOB_USER}`,
-            password: `${process.env.DB_PUESTOLOB_PASSWORD}`,
-            port: Number(process.env.DB_PUESTOLOB_PORT),
-            options: {
-                trustedConnection: true,
-                encrypt: false,
-                trustServerCertificate: true,
-            },
-        });
+        const pool = await getConnection();
         
         // Execute a query
         const result = await pool.request().query(`SELECT ID, Descripcion from M0_CuentasCorrientesLugaresDeRecepcion WHERE Modulo=6 AND Activa=1 AND IDCuentasCorrientes=${id} ORDER BY Descripcion`);
@@ -877,18 +811,7 @@ router.get("/lugaresDeRecepcion/:id", async (req, res) => {
 router.get("/cuentasRemitos", async (req, res) => {
     try {
         // Create a connection pool
-        const pool = await mssql.connect({
-            server: `${process.env.DB_PUESTOLOB_SERVER}`,
-            database: `${process.env.DB_PUESTOLOB_DATABASE}`,
-            user: `${process.env.DB_PUESTOLOB_USER}`,
-            password: `${process.env.DB_PUESTOLOB_PASSWORD}`,
-            port: Number(process.env.DB_PUESTOLOB_PORT),
-            options: {
-                trustedConnection: true,
-                encrypt: false,
-                trustServerCertificate: true,
-            },
-        });
+        const pool = await getConnection();
         
         // Execute a query
         const result = await pool.request().query("SELECT DISTINCT IDCtaCte, NombreCtaCte from [dbo].[V6_SaldoPedidos] where Tipo='Venta' and pedido>remito ORDER BY NombreCtaCte");
@@ -906,18 +829,7 @@ router.get("/cuentasRemitos", async (req, res) => {
 router.get("/depositos", async (req, res) => {
     try {
         // Create a connection pool
-        const pool = await mssql.connect({
-            server: `${process.env.DB_PUESTOLOB_SERVER}`,
-            database: `${process.env.DB_PUESTOLOB_DATABASE}`,
-            user: `${process.env.DB_PUESTOLOB_USER}`,
-            password: `${process.env.DB_PUESTOLOB_PASSWORD}`,
-            port: Number(process.env.DB_PUESTOLOB_PORT),
-            options: {
-                trustedConnection: true,
-                encrypt: false,
-                trustServerCertificate: true,
-            },
-        });
+        const pool = await getConnection();
         
         // Execute a query
         const result = await pool.request().query("Select ID, Descripcion, GLN From M0_Depositos WHERE Modulo=6 and Activa=1 ORDER BY id");
@@ -937,18 +849,7 @@ router.get("/depositos", async (req, res) => {
 router.get("/articulos", async (req, res) => {
     try {
         // Create a connection pool
-        const pool = await mssql.connect({
-            server: `${process.env.DB_PUESTOLOB_SERVER}`,
-            database: `${process.env.DB_PUESTOLOB_DATABASE}`,
-            user: `${process.env.DB_PUESTOLOB_USER}`,
-            password: `${process.env.DB_PUESTOLOB_PASSWORD}`,
-            port: Number(process.env.DB_PUESTOLOB_PORT),
-            options: {
-                trustedConnection: true,
-                encrypt: false,
-                trustServerCertificate: true,
-            },
-        });
+        const pool = await getConnection();
         
         // Execute a query
         const result = await pool.request().query("SELECT * FROM M6_Picking WHERE ESTADO = 'N'");
@@ -966,18 +867,7 @@ router.get("/articulos", async (req, res) => {
 router.get("/lotes_articulo/:gtin/:gln/:lote", async (req, res) => {
     const { gtin, gln, lote } = req.params;
     try {
-        const pool = await mssql.connect({
-            server: `${process.env.DB_PUESTOLOB_SERVER}`,
-            database: `${process.env.DB_PUESTOLOB_DATABASE}`,
-            user: `${process.env.DB_PUESTOLOB_USER}`,
-            password: `${process.env.DB_PUESTOLOB_PASSWORD}`,
-            port: Number(process.env.DB_PUESTOLOB_PORT),
-            options: {
-                trustedConnection: true,
-                encrypt: false,
-                trustServerCertificate: true,
-            },
-        });
+        const pool = await getConnection();
         
         const result = await pool.request()
         .input('GTIN', mssql.Char, gtin)
@@ -1006,18 +896,7 @@ router.get("/articulos/cuenta/:id", async (req, res) => {
         const id = req.params.id;
         if (!id) res.status(400).send('Invalid id argument');
         // Create a connection pool
-        const pool = await mssql.connect({
-            server: `${process.env.DB_PUESTOLOB_SERVER}`,
-            database: `${process.env.DB_PUESTOLOB_DATABASE}`,
-            user: `${process.env.DB_PUESTOLOB_USER}`,
-            password: `${process.env.DB_PUESTOLOB_PASSWORD}`,
-            port: Number(process.env.DB_PUESTOLOB_PORT),
-            options: {
-                trustedConnection: true,
-                encrypt: false,
-                trustServerCertificate: true,
-            },
-        });
+        const pool = await getConnection();
         
         // Execute a query
         const result = await pool.request().query(`SELECT * FROM M6_Picking where IDCtaCte = ${id}`);
@@ -1043,24 +922,13 @@ router.post("/articulos_pickeados", async (req, res) => {
         }
         
         // Create a connection pool
-        const pool = await mssql.connect({
-            server: `${process.env.DB_PUESTOLOB_SERVER}`,
-            database: `${process.env.DB_PUESTOLOB_DATABASE}`,
-            user: `${process.env.DB_PUESTOLOB_USER}`,
-            password: `${process.env.DB_PUESTOLOB_PASSWORD}`,
-            port: Number(process.env.DB_PUESTOLOB_PORT),
-            options: {
-                trustedConnection: true,
-                encrypt: false,
-                trustServerCertificate: true,
-            },
-        });
+        const pool = await getConnection();
         
         // Begin a transaction
         const transaction = new mssql.Transaction(pool);
-        await transaction.begin();
         
         try {
+            await transaction.begin();
             // Update the articles in the database
             for (const article of articulos) {
                 const query = `UPDATE M6_Picking SET CantidadPickeada = ${article.CantidadPickeada}, Estado = '${article.Estado}', Lotes = '${article.Lotes}', HoraPicking = '${article.HoraPicking}', FechaPicking = '${article.FechaPicking}' WHERE ID = ${article.ID}`;

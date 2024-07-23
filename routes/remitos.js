@@ -356,15 +356,29 @@ router.post("/pedidosRemito", async (req, res) => {
     }
 });
 
+
+
+
+
+
+
+
+
+
+
 /** 
  * @swagger
  * /post/pedidosRemitoBulk:
  *   post:
- *     summary: Crea remito con varios pedidos en simultaneo
+ *     summary: Inserta articulos de pedidos en picking 
  *     tags: [Remitos]
  */
 router.post("/pedidosRemitoBulk", async (req, res) => {
-    const pedidos = req.body; // Ahora esperamos un arreglo de pedidos en el cuerpo de la solicitud
+    const pedidos = req.body; 
+    // Ahora esperamos un arreglo de articulos seleccionados pertenecientes a varios pedidos con los que debe armarse el picking de remito
+    // el picking de remito es un arreglo de articulos unicos con la cantidad acumulada de articulos pedidos entre los posibles diferentes pedidos 
+    // con un numero en comun y con el detalle en el campo pedidos que tenga el formato: IDPEDIDO:NUMEROPEDIDO=CANTIDAD; ...
+     
 
     // Verificar que pedidos es un arreglo
     if (!Array.isArray(pedidos) || pedidos.length === 0) {
@@ -463,6 +477,14 @@ router.post("/pedidosRemitoBulk", async (req, res) => {
         pool.close();
     }
 });
+
+
+
+
+
+
+
+
 
 /**
 * @swagger
@@ -737,6 +759,13 @@ router.get("/cabeceraRemito/:id", async (req, res) => {
     }
 });
 
+
+
+
+
+
+
+
 /**
 * @swagger
 * /pedidosConRemitosPendientes/{id}:
@@ -788,6 +817,12 @@ router.get("/pedidosConRemitosPendientes/:id", async (req, res) => {
     }
 });
 
+
+
+
+
+
+
 router.get("/lugaresDeRecepcion/:id", async (req, res) => {
     try {
         const id = req.params.id;
@@ -796,7 +831,7 @@ router.get("/lugaresDeRecepcion/:id", async (req, res) => {
         const pool = await getConnection();
         
         // Execute a query
-        const result = await pool.request().query(`SELECT ID, Descripcion from M0_CuentasCorrientesLugaresDeRecepcion WHERE Modulo=6 AND Activa=1 AND IDCuentasCorrientes=${id} ORDER BY Descripcion`);
+        const result = await pool.request().query(`Select ID, Descripcion from M0_CuentasCorrientesLugaresDeRecepcion WHERE Modulo=6 AND Activa=1 AND IDCuentasCorrientes=${id} UNION ALL Select 999999, DireccionE as Descripcion from M0_CuentasCorrientes WHERE Activa=1 AND ID=${id} ORDER BY Descripcion`);
         
         await pool.close()
         

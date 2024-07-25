@@ -413,19 +413,19 @@ router.post("/pedidosRemitoBulk", async (req, res) => {
         ps.input('FechaPicking', mssql.Date) 
         ps.input('HoraPicking', mssql.Time(7)) 
         ps.input('IDDepositos', mssql.Int) 
-        ps.input('IDCabezal', mssql.Int) 
+        // ps.input('IDCabezal', mssql.Int) 
 
 
         const query = `
             INSERT INTO m6_Picking (
                 Estado, IDCtaCte, NombreCtaCte, IDArticulo, CodigoDeBarras, Gtin, GLN, NombreArticulo, 
                 Pedidos, Cantidad, Usuario, Numero, FechaAlta, HoraAlta, Lotes, CantidadPickeada, FechaPicking, 
-                HoraPicking, IDDepositos, IDCabezal
+                HoraPicking, IDDepositos
             )
             VALUES (
                 @Estado, @IDCtaCte, @NombreCtaCte, @IDArticulo, @CodigoDeBarras, @Gtin, @GLN, @NombreArticulo, 
                 @Pedidos, @Cantidad, @Usuario, @Numero, @FechaAlta, @HoraAlta, @Lotes, @CantidadPickeada, @FechaPicking, 
-                @HoraPicking, @IDDepositos, @IDCabezal
+                @HoraPicking, @IDDepositos
             );
         `;
 
@@ -453,7 +453,7 @@ router.post("/pedidosRemitoBulk", async (req, res) => {
                 FechaPicking: pedido.FechaPicking,
                 HoraPicking: pedido.HoraPicking ? parseTimeToDate(pedido.HoraPicking) : null,
                 IDDepositos: pedido.IDDepositos,
-                IDCabezal: pedido.IDCabezal
+                // IDCabezal: pedido.IDCabezal
             })
         }
         

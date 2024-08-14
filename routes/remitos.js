@@ -831,8 +831,7 @@ router.get("/lugaresDeRecepcion/:id", async (req, res) => {
         const pool = await getConnection();
         
         // Execute a query
-        const result = await pool.request().query(`Select ID, Descripcion from M0_CuentasCorrientesLugaresDeRecepcion WHERE Modulo=6 AND Activa=1 AND IDCuentasCorrientes=${id} UNION ALL Select 999999, DireccionE as Descripcion from M0_CuentasCorrientes WHERE Activa=1 AND ID=${id} ORDER BY Descripcion`);
-        
+        const result = await pool.request().query(`Select ID, Descripcion from M0_CuentasCorrientesLugaresDeRecepcion WHERE Activa=1 AND IDCuentasCorrientes=${id}`);
         await pool.close()
         
         // Send the result as a response

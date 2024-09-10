@@ -933,7 +933,7 @@ router.get("/articulos/cuenta/:id", async (req, res) => {
         const pool = await getConnection();
         
         // Execute a query
-        const result = await pool.request().query(`SELECT * FROM M6_Picking where IDCtaCte = ${id}`);
+        const result = await pool.request().query(`SELECT * FROM M6_Picking where IDCtaCte = ${id} AND ESTADO = 'N'`);
         
         await pool.close()
         
